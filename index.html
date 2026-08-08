@@ -225,24 +225,6 @@
       align-items: center;
     }
 
-    .save-btn {
-      background: var(--brand-gradient);
-      color: #FFFFFF;
-      border: none;
-      padding: 8px 16px;
-      border-radius: var(--radius-md);
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
-      transition: all 0.2s ease;
-    }
-
-    .save-btn:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 16px rgba(79, 70, 229, 0.35);
-    }
-
     .view-switcher {
       display: flex;
       background: var(--bg-page);
@@ -635,8 +617,6 @@
       </div>
 
       <div class="controls-group">
-        <button class="save-btn" onclick="saveToDesktopFolder()">💾 Save File</button>
-
         <!-- Compact / Detailed Mode Switcher -->
         <div class="view-switcher">
           <button class="view-btn-text active" id="btnCompact" onclick="setDetailMode('compact')">Compact</button>
@@ -661,7 +641,6 @@
   <script>
     let currentLayout = 'list';
     let currentDetailMode = 'compact';
-    let fileHandle = null;
     let activeFilter = null;
     let draggedItemId = null;
 
@@ -941,32 +920,6 @@
       activeFilter = null;
       document.getElementById('nav-all').classList.add('active');
       renderItems(items);
-    }
-
-    async function saveToDesktopFolder() {
-      try {
-        const fullHtml = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
-
-        if (!fileHandle) {
-          fileHandle = await window.showSaveFilePicker({
-            suggestedName: 'index.html',
-            types: [{
-              description: 'HTML File',
-              accept: { 'text/html': ['.html'] },
-            }],
-          });
-        }
-
-        const writable = await fileHandle.createWritable();
-        await writable.write(fullHtml);
-        await writable.close();
-
-        alert('File saved successfully in your savemeto folder!');
-      } catch (err) {
-        if (err.name !== 'AbortError') {
-          console.error('File save error:', err);
-        }
-      }
     }
 
     renderItems(items);

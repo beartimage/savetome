@@ -6,18 +6,48 @@ described, filed into Projects (folders). Compact/Detailed × List/Grid views,
 inline-editable notes, drag-and-drop into folders, client-side search.
 
 ## Hard rules
-- Lives **only** at `~/Desktop/saveto.me/` with its own git remote.
+- Lives **only** at `~/Desktop/saveto.me/` with its own git remote (`beartimage/savetome`).
 - **Never** publish to QNR Tools Hub or the script launcher.
-- Static, in-browser, privacy-first — no uploads, no backend unless explicitly added.
+- Privacy-first. The app runs fully client-side in **local-only mode** by default
+  (IndexedDB, no uploads). The optional Cloudflare backend (accounts + sync) is
+  additive — the SPA still works with no backend present.
 
 ## Structure
 ```
 ~/Desktop/saveto.me/
-├── index.html   # entire app (HTML + CSS + JS in one file)
+├── public/index.html   # entire SPA (HTML + CSS + JS in one file)
+├── worker.js           # Cloudflare Worker: OAuth + /api/state sync + asset fallthrough
+├── wrangler.toml       # Worker config (assets dir=public, D1 binding, client-id vars)
+├── schema.sql          # D1 tables (users, state)
+├── SETUP.md            # one-time backend setup (OAuth apps, D1, secrets, deploy)
 ├── README.md
-├── CLAUDE.md    # this file
+├── CLAUDE.md           # this file
 └── .gitignore
 ```
+
+## Accounts + cloud sync (optional backend)
+- **Deployed as a Cloudflare Worker** (`worker.js`) that handles `/api/*` and falls
+  through to the static assets in `public/` for everything else.
+- **Auth**: OAuth (Google + GitHub). Login flow: `/api/auth/:provider/login` →
+  provider → `/api/auth/:provider/callback` → upsert `users` row → signed-JWT session
+  cookie (`st_sess`, HttpOnly/Secure/SameSite=Lax, 30d). CSRF via signed `st_oauth`
+  state cookie. HS256 JWT signed with `SESSION_SECRET` (WebCrypto HMAC). Redirect URI
+  derived from request origin (works on workers.dev and any custom domain registered
+  in the OAuth apps).
+- **Sync model**: one JSON **state blob per user** in D1 (`state` table) — matches the
+  app's "load everything into memory" model. `GET /api/state` hydrates; `PUT /api/state`
+  saves. Frontend `cloudInit()` runs after `initStore()`: `GET /api/me` → if signed in,
+  pull server state (or seed it from local on first login), then every DB write helper
+  (`dbPut`/`dbPutMany`/`dbDelete`/`dbDeleteMany`/`dbSaveProjects`) triggers a debounced
+  `PUT /api/state` (800ms). `cloud.suspend` guards against echo during hydration.
+- **Graceful degradation**: if `/api/me` fails (file://, plain static host, or 404),
+  the app stays in local-only mode — nothing breaks. Account UI lives in the sidebar
+  footer `.profile-row` (`renderAccountUI`): Sign in button → login modal
+  (`#loginOverlay`, `openLogin`/`closeLogin`) → `beginLogin(provider)`; signed-in shows
+  avatar/name + logout (`cloudLogout`).
+- Setup + deploy steps: **SETUP.md**. Secrets (`GOOGLE_/GITHUB_CLIENT_SECRET`,
+  `SESSION_SECRET`) via `wrangler secret put`, never committed. Client IDs are public
+  `[vars]` in wrangler.toml.
 
 ## Design tokens
 - Font: **Inter** everywhere (`--font-sans`; `--font-display` aliases it). No serif.

@@ -1,0 +1,216 @@
+// ============================================================================
+//  saveto.me — Cloudflare Worker
+//  - OAuth sign-in (Google / GitHub)
+//  - Per-user state sync backed by D1 (a single JSON blob per user)
+//  - Everything else falls through to the static assets (the SPA index.html)
+//
+//  Bindings expected (see wrangler.toml + SETUP.md):
+//    ASSETS  (static assets)          DB (D1 database)
+//  Vars:    GOOGLE_CLIENT_ID, GITHUB_CLIENT_ID
+//  Secrets: GOOGLE_CLIENT_SECRET, GITHUB_CLIENT_SECRET, SESSION_SECRET
+// ============================================================================
+
+const SESSION_COOKIE = 'st_sess';
+const OAUTH_COOKIE = 'st_oauth';
+const SESSION_TTL = 60 * 60 * 24 * 30;   // 30 days
+const MAX_STATE_BYTES = 5_000_000;       // 5 MB per-user state cap
+
+export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
+    if (url.pathname.startsWith('/api/')) {
+      try { return await handleApi(request, env, url); }
+      catch (e) { return json({ error: e && e.message ? e.message : 'Server error' }, 500); }
+    }
+    return env.ASSETS.fetch(request);   // SPA + static files
+  }
+};
+
+async function handleApi(request, env, url) {
+  const path = url.pathname;
+  const method = request.method;
+
+  let m = path.match(/^\/api\/auth\/(google|github)\/login$/);
+  if (m && method === 'GET') return startOAuth(m[1], env, url);
+
+  m = path.match(/^\/api\/auth\/(google|github)\/callback$/);
+  if (m && method === 'GET') return oauthCallback(m[1], request, env, url);
+
+  if (path === '/api/auth/logout' && method === 'POST') {
+    return new Response(null, { status: 204, headers: { 'Set-Cookie': clearCookie(SESSION_COOKIE) } });
+  }
+
+  const uid = await getSession(request, env);
+
+  if (path === '/api/me' && method === 'GET') {
+    if (!uid) return json({ user: null }, 401);
+    const user = await env.DB.prepare('SELECT id,email,name,avatar,provider FROM users WHERE id=?').bind(uid).first();
+    return json({ user: user || null }, user ? 200 : 401);
+  }
+
+  if (path === '/api/state') {
+    if (!uid) return json({ error: 'unauthorized' }, 401);
+    if (method === 'GET') {
+      const row = await env.DB.prepare('SELECT blob,updated_at FROM state WHERE user_id=?').bind(uid).first();
+      let blob = null;
+      if (row && row.blob) { try { blob = JSON.parse(row.blob); } catch (e) { blob = null; } }
+      return json({ blob, updatedAt: row ? row.updated_at : 0 });
+    }
+    if (method === 'PUT') {
+      const body = await request.text();
+      if (body.length > MAX_STATE_BYTES) return json({ error: 'state too large' }, 413);
+      try { JSON.parse(body); } catch (e) { return json({ error: 'invalid JSON' }, 400); }
+      const now = Date.now();
+      await env.DB.prepare(
+        'INSERT INTO state (user_id,blob,updated_at) VALUES (?,?,?) ' +
+        'ON CONFLICT(user_id) DO UPDATE SET blob=excluded.blob, updated_at=excluded.updated_at'
+      ).bind(uid, body, now).run();
+      return json({ ok: true, updatedAt: now });
+    }
+  }
+
+  return json({ error: 'not found' }, 404);
+}
+
+// ---------------------------------------------------------------- OAuth flow
+
+function providerCfg(provider, env, origin) {
+  const redirectUri = origin + '/api/auth/' + provider + '/callback';
+  if (provider === 'google') return {
+    clientId: env.GOOGLE_CLIENT_ID, clientSecret: env.GOOGLE_CLIENT_SECRET,
+    authorize: 'https://accounts.google.com/o/oauth2/v2/auth',
+    token: 'https://oauth2.googleapis.com/token',
+    scope: 'openid email profile', redirectUri
+  };
+  return {
+    clientId: env.GITHUB_CLIENT_ID, clientSecret: env.GITHUB_CLIENT_SECRET,
+    authorize: 'https://github.com/login/oauth/authorize',
+    token: 'https://github.com/login/oauth/access_token',
+    scope: 'read:user user:email', redirectUri
+  };
+}
+
+async function startOAuth(provider, env, url) {
+  const cfg = providerCfg(provider, env, url.origin);
+  if (!cfg.clientId || !cfg.clientSecret) return redirect('/?auth=unconfigured');
+  const state = randHex(16);
+  const authUrl = new URL(cfg.authorize);
+  authUrl.searchParams.set('client_id', cfg.clientId);
+  authUrl.searchParams.set('redirect_uri', cfg.redirectUri);
+  authUrl.searchParams.set('response_type', 'code');
+  authUrl.searchParams.set('scope', cfg.scope);
+  authUrl.searchParams.set('state', state);
+  if (provider === 'google') { authUrl.searchParams.set('access_type', 'online'); authUrl.searchParams.set('prompt', 'select_account'); }
+  const cookie = cookieStr(OAUTH_COOKIE, await signJwt({ state, provider, exp: nowSec() + 600 }, env), 600);
+  return new Response(null, { status: 302, headers: { Location: authUrl.toString(), 'Set-Cookie': cookie } });
+}
+
+async function oauthCallback(provider, request, env, url) {
+  const code = url.searchParams.get('code');
+  const state = url.searchParams.get('state');
+  const saved = await verifyJwt(getCookie(request, OAUTH_COOKIE), env);
+  if (!code || !state || !saved || saved.state !== state || saved.provider !== provider) return redirect('/?auth=error');
+
+  const cfg = providerCfg(provider, env, url.origin);
+  const tokenRes = await fetch(cfg.token, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Accept': 'application/json' },
+    body: new URLSearchParams({
+      client_id: cfg.clientId, client_secret: cfg.clientSecret,
+      code, redirect_uri: cfg.redirectUri, grant_type: 'authorization_code'
+    })
+  });
+  const tok = await tokenRes.json().catch(() => null);
+  if (!tok || (!tok.access_token && !tok.id_token)) return redirect('/?auth=error');
+
+  let profile;
+  if (provider === 'google') {
+    const claims = decodeJwtPayload(tok.id_token);
+    if (!claims || !claims.sub) return redirect('/?auth=error');
+    profile = { pid: claims.sub, email: claims.email || '', name: claims.name || claims.email || 'Account', avatar: claims.picture || '' };
+  } else {
+    const ghHeaders = { Authorization: 'Bearer ' + tok.access_token, 'User-Agent': 'savetome', Accept: 'application/vnd.github+json' };
+    const gu = await (await fetch('https://api.github.com/user', { headers: ghHeaders })).json().catch(() => null);
+    if (!gu || !gu.id) return redirect('/?auth=error');
+    let email = gu.email || '';
+    if (!email) {
+      const emails = await (await fetch('https://api.github.com/user/emails', { headers: ghHeaders })).json().catch(() => []);
+      const primary = Array.isArray(emails) ? (emails.find(e => e.primary && e.verified) || emails.find(e => e.verified)) : null;
+      email = primary ? primary.email : '';
+    }
+    profile = { pid: String(gu.id), email, name: gu.name || gu.login || 'Account', avatar: gu.avatar_url || '' };
+  }
+
+  const uid = provider + ':' + profile.pid;
+  await env.DB.prepare(
+    'INSERT INTO users (id,email,name,avatar,provider,created_at) VALUES (?,?,?,?,?,?) ' +
+    'ON CONFLICT(id) DO UPDATE SET email=excluded.email, name=excluded.name, avatar=excluded.avatar'
+  ).bind(uid, profile.email, profile.name, profile.avatar, provider, Date.now()).run();
+
+  const sess = await signJwt({ uid, exp: nowSec() + SESSION_TTL }, env);
+  const headers = new Headers();
+  headers.append('Set-Cookie', cookieStr(SESSION_COOKIE, sess, SESSION_TTL));
+  headers.append('Set-Cookie', clearCookie(OAUTH_COOKIE));
+  headers.set('Location', '/');
+  return new Response(null, { status: 302, headers });
+}
+
+async function getSession(request, env) {
+  const p = await verifyJwt(getCookie(request, SESSION_COOKIE), env);
+  return p ? p.uid : null;
+}
+
+// ---------------------------------------------------------------- JWT (HS256)
+
+function reqSecret(env) { if (!env.SESSION_SECRET) throw new Error('SESSION_SECRET not set'); return env.SESSION_SECRET; }
+
+async function hmacKey(secret) {
+  return crypto.subtle.importKey('raw', enc(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign', 'verify']);
+}
+async function signJwt(payload, env) {
+  const h = b64urlStr(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+  const p = b64urlStr(JSON.stringify(payload));
+  const data = h + '.' + p;
+  const sig = await crypto.subtle.sign('HMAC', await hmacKey(reqSecret(env)), enc(data));
+  return data + '.' + b64url(sig);
+}
+async function verifyJwt(token, env) {
+  if (!token) return null;
+  const parts = token.split('.');
+  if (parts.length !== 3) return null;
+  const data = parts[0] + '.' + parts[1];
+  const ok = await crypto.subtle.verify('HMAC', await hmacKey(reqSecret(env)), b64urlBytes(parts[2]), enc(data));
+  if (!ok) return null;
+  let payload; try { payload = JSON.parse(dec(b64urlBytes(parts[1]))); } catch (e) { return null; }
+  if (payload.exp && payload.exp < nowSec()) return null;
+  return payload;
+}
+function decodeJwtPayload(jwt) { try { return JSON.parse(dec(b64urlBytes(String(jwt).split('.')[1]))); } catch (e) { return null; } }
+
+// ---------------------------------------------------------------- utilities
+
+function enc(s) { return new TextEncoder().encode(s); }
+function dec(b) { return new TextDecoder().decode(b); }
+function b64url(buf) {
+  const a = new Uint8Array(buf); let s = '';
+  for (let i = 0; i < a.length; i++) s += String.fromCharCode(a[i]);
+  return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+function b64urlStr(str) { return b64url(enc(str)); }
+function b64urlBytes(s) {
+  s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '=';
+  const bin = atob(s); const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+function nowSec() { return Math.floor(Date.now() / 1000); }
+function randHex(n) { const a = new Uint8Array(n); crypto.getRandomValues(a); return [...a].map(b => b.toString(16).padStart(2, '0')).join(''); }
+function cookieStr(name, val, maxAge) { return `${name}=${val}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${maxAge}`; }
+function clearCookie(name) { return `${name}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`; }
+function getCookie(request, name) {
+  const h = request.headers.get('Cookie') || '';
+  const m = h.match(new RegExp('(?:^|; )' + name + '=([^;]+)'));
+  return m ? m[1] : null;
+}
+function json(obj, status = 200) { return new Response(JSON.stringify(obj), { status, headers: { 'Content-Type': 'application/json' } }); }
+function redirect(loc) { return new Response(null, { status: 302, headers: { Location: loc } }); }

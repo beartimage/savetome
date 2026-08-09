@@ -1,0 +1,22 @@
+name = "savetome"
+main = "worker.js"
+compatibility_date = "2024-11-01"
+
+# Static SPA assets. The Worker (worker.js) handles /api/*; everything else
+# is served from here via the ASSETS binding.
+[assets]
+directory = "./public"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+
+# D1 database — run `wrangler d1 create savetome` and paste the id below.
+[[d1_databases]]
+binding = "DB"
+database_name = "savetome"
+database_id = "PASTE_D1_DATABASE_ID_HERE"
+
+# Public (non-secret) OAuth client IDs. Secrets are set separately with
+# `wrangler secret put` — see SETUP.md. Do NOT put client secrets here.
+[vars]
+GOOGLE_CLIENT_ID = ""
+GITHUB_CLIENT_ID = ""

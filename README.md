@@ -24,15 +24,20 @@ shown in compact/detailed and list/grid views. Everything runs client-side.
 - **Clickable pastel tags** — tags everywhere are colored text (one unified pastel palette,
   not pills); click one to filter. The sidebar shows the top 10; "Show all" opens a
   searchable tags modal.
+- **Themes** — Light, Dark, Green, Red, Black (OLED), and Gold. Picker in the header ⋮ menu; choice persists.
+- **Accounts + cloud sync (optional)** — sign in with Google or GitHub to sync your
+  library across devices. Backed by a Cloudflare Worker + D1; the app still works
+  fully local-only with no account. See **SETUP.md**.
 
 ## Known gaps / next steps
 - **Persistence: done** — links live in **IndexedDB** (`savemeDB`), loaded into memory on
   boot and written through on every change. Survives reloads; no 5 MB localStorage cap.
-  First run seeds the store with the built-in sample links.
+  First run seeds the store with the built-in sample links. Signed in, the same state is
+  mirrored to the cloud (one JSON blob per user in D1).
 - **Scale** — the list renders in **chunks of 80** (windowed / infinite scroll via an
   IntersectionObserver sentinel), so 100k+ links never build 100k DOM nodes at once.
   The sidebar tag list is capped to the **top 20** with a "Show all" toggle. Comfortable
-  to ~100k links fully client-side; beyond that needs a backend (Postgres + a search engine).
+  to ~100k links fully client-side; beyond that, move the per-user state blob to per-row storage.
 - Favicons are fetched from Google's favicon service; website previews (in the
   Pinterest view) are fetched from WordPress mShots — both send the URL/domain to a
   third party. These are the only external requests.
@@ -40,20 +45,24 @@ shown in compact/detailed and list/grid views. Everything runs client-side.
   derived from the URL and the description from the on-device classifier.
 
 ## Run
-Open `index.html` in a browser, or serve the folder:
+Open `public/index.html` in a browser, or serve the folder:
 ```
-cd ~/Desktop/saveto.me && python3 -m http.server 8080
+cd ~/Desktop/saveto.me/public && python3 -m http.server 8080
 ```
 
 ## Deploy
-Static site — deployable to Cloudflare Pages / GitHub Pages as-is (single file).
+Deployed as a **Cloudflare Worker** (`wrangler deploy`) — serves the SPA from `public/`
+and the `/api/*` accounts/sync backend from `worker.js`. One-time setup (OAuth apps, D1,
+secrets) is in **SETUP.md**. Without the backend it is still a plain static site
+(any static host / GitHub Pages) in local-only mode.
 
 ## Project rules
-- Lives **only** at `~/Desktop/saveto.me/` with its own git remote.
+- Lives **only** at `~/Desktop/saveto.me/` with its own git remote (`beartimage/savetome`).
 - **Never** published to QNR Tools Hub or the script launcher.
 
 ## Stack
-- Single-file HTML/CSS/JS. Inter throughout. **Two-tone dashboard theme** (SwiftHub
-  reference) — dark navy sidebar with purple accent, orange count badges, and feather-style
-  line icons on every row; light lavender-gray content area with white cards, purple
-  `#6C5CE7` accents, and soft shadows.
+- SPA in a single `public/index.html` (HTML/CSS/JS); Plus Jakarta Sans throughout.
+  Optional Cloudflare Worker (`worker.js`) + D1 for accounts/sync. **Two-tone dashboard
+  theme** (SwiftHub reference) — dark navy sidebar with purple accent, orange count
+  badges, and feather-style line icons on every row; light lavender-gray content area
+  with white cards, purple `#6C5CE7` accents, and soft shadows. Six selectable themes.

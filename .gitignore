@@ -9,3 +9,8 @@
 # Logs / temp
 *.log
 tmp/
+
+# Cloudflare / Wrangler
+.wrangler/
+.dev.vars
+node_modules/

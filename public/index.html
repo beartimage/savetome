@@ -1646,6 +1646,41 @@
     .sw-black { background: linear-gradient(135deg, #0B0B0F 50%, #E8EAF6 50%); }
     .sw-gold  { background: linear-gradient(135deg, #FFFFFF 50%, #D4A017 50%); }
 
+    /* ===== Account (sign in / out) ===== */
+    .profile-av img, img.profile-av { object-fit: cover; }
+    .profile-login {
+      margin-left: auto; flex-shrink: 0; padding: 6px 12px; border-radius: 999px;
+      background: var(--brand-primary); color: #FFFFFF; border: none; cursor: pointer;
+      font-family: var(--font-sans); font-size: 12px; font-weight: 700; letter-spacing: -0.01em;
+      transition: background 0.14s ease, transform 0.14s ease;
+    }
+    .profile-login:hover { background: var(--brand-hover); transform: translateY(-1px); }
+    .profile-logout {
+      margin-left: auto; flex-shrink: 0; width: 30px; height: 30px; display: inline-flex;
+      align-items: center; justify-content: center; border-radius: 8px; cursor: pointer;
+      background: transparent; border: 1px solid var(--nav-border); color: var(--nav-muted);
+      transition: color 0.14s ease, border-color 0.14s ease, background 0.14s ease;
+    }
+    .profile-logout:hover { color: #FFFFFF; border-color: var(--nav-active-text); background: var(--nav-active-bg); }
+    .profile-logout svg { width: 15px; height: 15px; }
+    body.sidebar-collapsed .profile-login, body.sidebar-collapsed .profile-logout { display: none; }
+
+    /* Login modal — provider buttons */
+    .login-modal { max-width: 380px; text-align: center; }
+    .login-modal .modal-title { justify-content: center; }
+    .login-sub { color: var(--text-sub); font-size: 13.5px; margin: 4px 0 20px; line-height: 1.5; }
+    .login-providers { display: flex; flex-direction: column; gap: 10px; }
+    .login-btn {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      padding: 12px 16px; border-radius: var(--radius-md); cursor: pointer; width: 100%;
+      font-family: var(--font-sans); font-size: 14px; font-weight: 600; letter-spacing: -0.01em;
+      border: 1px solid var(--border-strong); background: var(--bg-card); color: var(--text-main);
+      transition: border-color 0.14s ease, transform 0.14s ease, box-shadow 0.14s ease;
+    }
+    .login-btn:hover { border-color: var(--brand-primary); transform: translateY(-1px); box-shadow: var(--shadow-hover); }
+    .login-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
+    .login-note { margin-top: 18px; font-size: 11.5px; color: var(--text-muted); line-height: 1.5; }
+
     /* ===== Card entrance animation ===== */
     @keyframes cardIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
     .link-item { animation: cardIn 0.26s cubic-bezier(0.22, 0.61, 0.36, 1) both; }
@@ -2097,6 +2132,27 @@
   </div>
 
   <!-- Settings / import-export modal -->
+  <div class="modal-overlay" id="loginOverlay" onclick="if(event.target===this)closeLogin()">
+    <div class="modal login-modal" role="dialog" aria-label="Sign in">
+      <div class="modal-head">
+        <h2 class="modal-title">Sign in to saveto.me</h2>
+        <button class="modal-close" onclick="closeLogin()" title="Close">×</button>
+      </div>
+      <p class="login-sub">Sync your bookmarks across every device. Your library stays private to your account.</p>
+      <div class="login-providers">
+        <button class="login-btn" onclick="beginLogin('google')">
+          <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23z"/><path fill="#FBBC05" d="M5.84 14.1a6.6 6.6 0 0 1 0-4.2V7.06H2.18a11 11 0 0 0 0 9.88l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1A11 11 0 0 0 2.18 7.06l3.66 2.84C6.71 7.3 9.14 5.38 12 5.38z"/></svg>
+          Continue with Google
+        </button>
+        <button class="login-btn" onclick="beginLogin('github')">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1.5a10.5 10.5 0 0 0-3.32 20.47c.52.1.71-.23.71-.5v-1.75c-2.92.63-3.54-1.4-3.54-1.4-.48-1.22-1.17-1.55-1.17-1.55-.96-.65.07-.64.07-.64 1.06.08 1.62 1.09 1.62 1.09.94 1.61 2.47 1.15 3.07.88.1-.68.37-1.15.67-1.42-2.33-.27-4.78-1.17-4.78-5.19 0-1.15.41-2.08 1.09-2.82-.11-.27-.47-1.35.1-2.81 0 0 .89-.29 2.9 1.08a10.1 10.1 0 0 1 5.28 0c2.01-1.37 2.9-1.08 2.9-1.08.57 1.46.21 2.54.1 2.81.68.74 1.09 1.67 1.09 2.82 0 4.03-2.46 4.91-4.8 5.17.38.33.71.97.71 1.96v2.9c0 .28.19.61.72.5A10.5 10.5 0 0 0 12 1.5z"/></svg>
+          Continue with GitHub
+        </button>
+      </div>
+      <p class="login-note">You can keep using saveto.me without an account — your data stays only in this browser until you sign in.</p>
+    </div>
+  </div>
+
   <div class="modal-overlay" id="settingsOverlay" onclick="if(event.target===this)closeSettings()">
     <div class="modal settings-modal" role="dialog" aria-label="Settings">
       <div class="modal-head">
@@ -5049,11 +5105,12 @@
       });
     }
 
-    function dbPut(item)       { if (_db) _db.transaction('links', 'readwrite').objectStore('links').put(item); }
-    function dbPutMany(arr)    { if (!_db || !arr || !arr.length) return; const s = _db.transaction('links', 'readwrite').objectStore('links'); arr.forEach(i => s.put(i)); }
-    function dbDelete(id)      { if (_db) _db.transaction('links', 'readwrite').objectStore('links').delete(id); }
-    function dbDeleteMany(ids) { if (!_db || !ids || !ids.length) return; const s = _db.transaction('links', 'readwrite').objectStore('links'); ids.forEach(id => s.delete(id)); }
+    function dbPut(item)       { if (_db) _db.transaction('links', 'readwrite').objectStore('links').put(item); cloudSchedulePush(); }
+    function dbPutMany(arr)    { if (!arr || !arr.length) return; if (_db) { const s = _db.transaction('links', 'readwrite').objectStore('links'); arr.forEach(i => s.put(i)); } cloudSchedulePush(); }
+    function dbDelete(id)      { if (_db) _db.transaction('links', 'readwrite').objectStore('links').delete(id); cloudSchedulePush(); }
+    function dbDeleteMany(ids) { if (!ids || !ids.length) return; if (_db) { const s = _db.transaction('links', 'readwrite').objectStore('links'); ids.forEach(id => s.delete(id)); } cloudSchedulePush(); }
     function dbSaveProjects()  {
+      cloudSchedulePush();
       if (!_db) return;
       const s = _db.transaction('meta', 'readwrite').objectStore('meta');
       s.put({ key: 'customProjects', value: customProjects });
@@ -5173,8 +5230,98 @@
       reader.readAsText(file);
     }
 
+    // ==========================================================================
+    //  Cloud accounts + sync (optional). Talks to the Cloudflare Worker /api/*.
+    //  Degrades silently to local-only IndexedDB mode when no backend answers
+    //  (opening the file directly, or before the Worker is deployed), so the app
+    //  keeps working exactly as before until you sign in.
+    // ==========================================================================
+    const cloud = { user: null, mode: false, suspend: false, timer: null };
+
+    async function cloudInit() {
+      let res;
+      try { res = await fetch('/api/me', { headers: { Accept: 'application/json' } }); }
+      catch (e) { return; }                              // no backend -> stay local, keep default profile row
+      if (res.status === 404) return;                    // not the Worker (e.g. plain static host)
+      let data = null; try { data = await res.json(); } catch (e) {}
+      if (!res.ok || !data || !data.user) { renderAccountUI(); return; }   // backend present, signed out
+      cloud.user = data.user; cloud.mode = true;
+      try {
+        const sres = await fetch('/api/state');
+        const sdata = sres.ok ? await sres.json() : null;
+        if (sdata && sdata.blob) { cloud.suspend = true; hydrateState(sdata.blob); cloud.suspend = false; refresh(); }
+        else { cloudPushNow(); }                          // first login: seed the server from local data
+      } catch (e) {}
+      renderAccountUI();
+    }
+
+    function stateSnapshot() {
+      return {
+        items, customProjects,
+        priorityProjects: [...priorityProjects],
+        projectParent,
+        projectCollapsed: [...projectCollapsed],
+        tagOrder, projectMeta
+      };
+    }
+    function hydrateState(b) {
+      if (!b || typeof b !== 'object') return;
+      if (Array.isArray(b.items)) items = b.items;
+      if (Array.isArray(b.customProjects)) customProjects = b.customProjects;
+      if (Array.isArray(b.priorityProjects)) priorityProjects = new Set(b.priorityProjects);
+      if (b.projectParent && typeof b.projectParent === 'object') projectParent = b.projectParent;
+      if (Array.isArray(b.projectCollapsed)) projectCollapsed = new Set(b.projectCollapsed);
+      if (Array.isArray(b.tagOrder)) tagOrder = b.tagOrder;
+      if (b.projectMeta && typeof b.projectMeta === 'object') projectMeta = b.projectMeta;
+    }
+    function cloudSchedulePush() {
+      if (!cloud.mode || cloud.suspend) return;
+      clearTimeout(cloud.timer);
+      cloud.timer = setTimeout(cloudPushNow, 800);
+    }
+    async function cloudPushNow() {
+      if (!cloud.mode) return;
+      try {
+        await fetch('/api/state', {
+          method: 'PUT', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(stateSnapshot())
+        });
+      } catch (e) {}
+    }
+    function beginLogin(provider) { location.href = '/api/auth/' + provider + '/login'; }
+    async function cloudLogout() {
+      try { await fetch('/api/auth/logout', { method: 'POST' }); } catch (e) {}
+      location.reload();
+    }
+    function openLogin()  { const o = document.getElementById('loginOverlay'); if (o) o.classList.add('show'); }
+    function closeLogin() { const o = document.getElementById('loginOverlay'); if (o) o.classList.remove('show'); }
+
+    function renderAccountUI() {
+      const row = document.querySelector('.profile-row');
+      if (!row) return;
+      const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      if (cloud.user) {
+        const u = cloud.user;
+        const initials = (u.name || u.email || 'U').trim().slice(0, 1).toUpperCase();
+        const av = u.avatar
+          ? `<img class="profile-av" src="${esc(u.avatar)}" alt="" referrerpolicy="no-referrer">`
+          : `<div class="profile-av">${esc(initials)}</div>`;
+        row.innerHTML = av +
+          `<div class="profile-text"><span class="profile-name">${esc(u.name || 'Account')}</span>` +
+          `<span class="profile-sub">${esc(u.email || 'Synced to cloud')}</span></div>` +
+          `<button class="profile-logout" title="Sign out" aria-label="Sign out" onclick="cloudLogout()">` +
+          `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>`;
+      } else {
+        row.innerHTML =
+          `<div class="profile-av">?</div>` +
+          `<div class="profile-text"><span class="profile-name">Not signed in</span>` +
+          `<span class="profile-sub">Local only</span></div>` +
+          `<button class="profile-login" onclick="openLogin()">Sign in</button>`;
+      }
+    }
+
     initDropImport();
-    initStore();
+    initStore().then(cloudInit);
   </script>
 </body>
 </html>

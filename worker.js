@@ -109,7 +109,10 @@ async function oauthCallback(provider, request, env, url) {
   const code = url.searchParams.get('code');
   const state = url.searchParams.get('state');
   const saved = await verifyJwt(getCookie(request, OAUTH_COOKIE), env);
-  if (!code || !state || !saved || saved.state !== state || saved.provider !== provider) return redirect('/?auth=error');
+  if (!code || !state || !saved || saved.state !== state || saved.provider !== provider) {
+    console.error('oauth state check failed', provider, { hasCode: !!code, hasState: !!state, hasCookie: !!saved, stateMatch: saved ? saved.state === state : null });
+    return redirect('/?auth=error&e=state');
+  }
 
   const cfg = providerCfg(provider, env, url.origin);
   const tokenRes = await fetch(cfg.token, {
@@ -121,17 +124,20 @@ async function oauthCallback(provider, request, env, url) {
     })
   });
   const tok = await tokenRes.json().catch(() => null);
-  if (!tok || (!tok.access_token && !tok.id_token)) return redirect('/?auth=error');
+  if (!tok || (!tok.access_token && !tok.id_token)) {
+    console.error('oauth token exchange failed', provider, tokenRes.status, JSON.stringify(tok));
+    return redirect('/?auth=error&e=token');
+  }
 
   let profile;
   if (provider === 'google') {
     const claims = decodeJwtPayload(tok.id_token);
-    if (!claims || !claims.sub) return redirect('/?auth=error');
+    if (!claims || !claims.sub) { console.error('google id_token decode failed'); return redirect('/?auth=error&e=gclaims'); }
     profile = { pid: claims.sub, email: claims.email || '', name: claims.name || claims.email || 'Account', avatar: claims.picture || '' };
   } else {
     const ghHeaders = { Authorization: 'Bearer ' + tok.access_token, 'User-Agent': 'savetome', Accept: 'application/vnd.github+json' };
     const gu = await (await fetch('https://api.github.com/user', { headers: ghHeaders })).json().catch(() => null);
-    if (!gu || !gu.id) return redirect('/?auth=error');
+    if (!gu || !gu.id) { console.error('github /user fetch failed', JSON.stringify(gu)); return redirect('/?auth=error&e=ghuser'); }
     let email = gu.email || '';
     if (!email) {
       const emails = await (await fetch('https://api.github.com/user/emails', { headers: ghHeaders })).json().catch(() => []);

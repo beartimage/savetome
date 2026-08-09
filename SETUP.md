@@ -27,29 +27,40 @@ wrangler login
 
 ## 1. Create the D1 database
 
+> Already done for this project: the database **`d1savetome`** exists and its
+> `database_id` is already filled into **wrangler.toml**. Skip `d1 create` unless
+> you're setting up a fresh account; just create the tables below.
+
 ```bash
 cd ~/Desktop/saveto.me
-wrangler d1 create savetome
+# (only if the DB doesn't exist yet)
+wrangler d1 create d1savetome    # then paste the printed database_id into wrangler.toml
 ```
 
-Copy the printed `database_id` into **wrangler.toml** (replace
-`PASTE_D1_DATABASE_ID_HERE`). Then create the tables:
+Create the tables (remote):
 
 ```bash
-wrangler d1 execute savetome --remote --file=./schema.sql
+wrangler d1 execute d1savetome --remote --file=./schema.sql
 ```
 
 ## 2. Create the OAuth apps
 
-You need one per provider. The **redirect / callback URL** must be exactly:
+You need one per provider. The **redirect / callback URL** must be exactly
+(primary custom domain — this is the live origin):
 
 ```
-https://savetome.savetome.workers.dev/api/auth/google/callback
-https://savetome.savetome.workers.dev/api/auth/github/callback
+https://saveto.me/api/auth/google/callback
+https://saveto.me/api/auth/github/callback
 ```
 
-(If you later add a custom domain, register that origin's callbacks too — the
-Worker derives the redirect URI from the request origin automatically.)
+Also register the workers.dev origin so sign-in works there too (the Worker
+derives the redirect URI from the request origin automatically, so every origin
+you use must be registered in the OAuth app):
+
+```
+https://savetome-website.savetome.workers.dev/api/auth/google/callback
+https://savetome-website.savetome.workers.dev/api/auth/github/callback
+```
 
 **Google** — https://console.cloud.google.com/apis/credentials
 - Create Credentials -> OAuth client ID -> *Web application*.
@@ -58,7 +69,7 @@ Worker derives the redirect URI from the request origin automatically.)
 - Note the **Client ID** and **Client secret**.
 
 **GitHub** — https://github.com/settings/developers -> New OAuth App
-- Homepage URL: `https://savetome.savetome.workers.dev`
+- Homepage URL: `https://saveto.me`
 - Authorization callback URL: the `.../github/callback` URL above.
 - Note the **Client ID**; generate a **Client secret**.
 
@@ -92,7 +103,7 @@ wrangler deploy
 
 ## 5. Verify
 
-- Open https://savetome.savetome.workers.dev
+- Open https://saveto.me
 - Sidebar footer shows **Sign in** -> pick Google or GitHub -> consent -> back to the app.
 - Footer now shows your name/avatar. Add a bookmark, open the site in another
   browser, sign in — the bookmark is there.
@@ -102,7 +113,7 @@ wrangler deploy
 ## Local development
 
 ```bash
-wrangler d1 execute savetome --local --file=./schema.sql
+wrangler d1 execute d1savetome --local --file=./schema.sql
 wrangler dev
 ```
 

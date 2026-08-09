@@ -1,4 +1,5 @@
-name = "savetome"
+# Must match the existing deployed Worker that owns the saveto.me custom domain.
+name = "savetome-website"
 main = "worker.js"
 compatibility_date = "2024-11-01"
 
@@ -9,14 +10,14 @@ directory = "./public"
 binding = "ASSETS"
 not_found_handling = "single-page-application"
 
-# D1 database — run `wrangler d1 create savetome` and paste the id below.
+# D1 database — created via `wrangler d1 create d1savetome`.
 [[d1_databases]]
 binding = "DB"
-database_name = "savetome"
-database_id = "PASTE_D1_DATABASE_ID_HERE"
+database_name = "d1savetome"
+database_id = "67df25cb-9eda-4fbf-bea6-1ca3415237f5"
 
 # Public (non-secret) OAuth client IDs. Secrets are set separately with
 # `wrangler secret put` — see SETUP.md. Do NOT put client secrets here.
 [vars]
-GOOGLE_CLIENT_ID = ""
-GITHUB_CLIENT_ID = ""
+GOOGLE_CLIENT_ID = "912323810168-bnl6fpdhr7t37j0vgjbethhuamua6pbk.apps.googleusercontent.com"
+GITHUB_CLIENT_ID = "Ov23liThVYH9vb2uTG6N"

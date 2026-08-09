@@ -1,6 +1,6 @@
 -- saveto.me D1 schema
--- Apply locally:  wrangler d1 execute savetome --local  --file=./schema.sql
--- Apply remote:   wrangler d1 execute savetome --remote --file=./schema.sql
+-- Apply locally:  wrangler d1 execute d1savetome --local  --file=./schema.sql
+-- Apply remote:   wrangler d1 execute d1savetome --remote --file=./schema.sql
 
 CREATE TABLE IF NOT EXISTS users (
   id         TEXT PRIMARY KEY,   -- "<provider>:<providerUserId>"

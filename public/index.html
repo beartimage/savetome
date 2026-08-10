@@ -5203,11 +5203,12 @@
       });
     }
 
-    function dbPut(item)       { if (_db) _db.transaction('links', 'readwrite').objectStore('links').put(item); cloudSchedulePush(); }
-    function dbPutMany(arr)    { if (!arr || !arr.length) return; if (_db) { const s = _db.transaction('links', 'readwrite').objectStore('links'); arr.forEach(i => s.put(i)); } cloudSchedulePush(); }
-    function dbDelete(id)      { if (_db) _db.transaction('links', 'readwrite').objectStore('links').delete(id); cloudSchedulePush(); }
-    function dbDeleteMany(ids) { if (!ids || !ids.length) return; if (_db) { const s = _db.transaction('links', 'readwrite').objectStore('links'); ids.forEach(id => s.delete(id)); } cloudSchedulePush(); }
+    function dbPut(item)       { item.updatedAt = Date.now(); if (_db) _db.transaction('links', 'readwrite').objectStore('links').put(item); cloudMarkDirty(item.id); cloudSchedulePush(); }
+    function dbPutMany(arr)    { if (!arr || !arr.length) return; const now = Date.now(); arr.forEach(i => { i.updatedAt = now; }); if (_db) { const s = _db.transaction('links', 'readwrite').objectStore('links'); arr.forEach(i => s.put(i)); } arr.forEach(i => cloudMarkDirty(i.id)); cloudSchedulePush(); }
+    function dbDelete(id)      { if (_db) _db.transaction('links', 'readwrite').objectStore('links').delete(id); cloudMarkDeleted(id); cloudSchedulePush(); }
+    function dbDeleteMany(ids) { if (!ids || !ids.length) return; if (_db) { const s = _db.transaction('links', 'readwrite').objectStore('links'); ids.forEach(id => s.delete(id)); } ids.forEach(id => cloudMarkDeleted(id)); cloudSchedulePush(); }
     function dbSaveProjects()  {
+      if (!cloud.suspend) cloud.settingsDirty = true;
       cloudSchedulePush();
       if (!_db) return;
       const s = _db.transaction('meta', 'readwrite').objectStore('meta');
@@ -5334,37 +5335,97 @@
     //  (opening the file directly, or before the Worker is deployed), so the app
     //  keeps working exactly as before until you sign in.
     // ==========================================================================
-    const cloud = { user: null, mode: false, suspend: false, timer: null };
+    // Delta sync: per-bookmark changes carry their own updatedAt and are merged
+    // server-side per row, so two devices editing at once no longer clobber each
+    // other. `dirty` = ids changed since last push; `deletes` = id->timestamp
+    // tombstones (persisted so an offline delete isn't resurrected on reload);
+    // projects/tags/view prefs ride along as a single versioned settings blob.
+    const cloud = { user: null, mode: false, suspend: false, timer: null,
+                    lastSync: 0, settingsSyncedAt: 0, settingsDirty: false,
+                    dirty: new Set(), deletes: new Map(), pulling: false };
+
+    function cloudMarkDirty(id)   { if (!cloud.mode || cloud.suspend) return; cloud.dirty.add(String(id)); cloud.deletes.delete(String(id)); }
+    function cloudMarkDeleted(id) { if (!cloud.mode || cloud.suspend) return; id = String(id); cloud.dirty.delete(id); cloud.deletes.set(id, Date.now()); persistDeletes(); }
+    function persistDeletes()     { if (_db) _db.transaction('meta', 'readwrite').objectStore('meta').put({ key: 'pendingDeletes', value: [...cloud.deletes.entries()] }); }
 
     async function cloudInit() {
       let res;
       try { res = await fetch('/api/me', { headers: { Accept: 'application/json' } }); }
-      catch (e) { return; }                              // no backend -> stay local, keep default profile row
-      if (res.status === 404) return;                    // not the Worker (e.g. plain static host)
+      catch (e) { return; }                              // no backend -> stay local
+      if (res.status === 404) return;                    // not the Worker (plain static host)
       let data = null; try { data = await res.json(); } catch (e) {}
-      if (!res.ok || !data || !data.user) { renderAccountUI(); return; }   // backend present, signed out
+      if (!res.ok || !data || !data.user) { renderAccountUI(); return; }   // signed out
       cloud.user = data.user; cloud.mode = true;
-      try {
-        const sres = await fetch('/api/state');
-        const sdata = sres.ok ? await sres.json() : null;
-        if (sdata && sdata.blob) { cloud.suspend = true; hydrateState(sdata.blob); cloud.suspend = false; refresh(); }
-        else { cloudPushNow(); }                          // first login: seed the server from local data
-      } catch (e) {}
+      const pd = await idbGet('meta', 'pendingDeletes');
+      if (pd && Array.isArray(pd.value)) pd.value.forEach(([id, ts]) => cloud.deletes.set(String(id), ts));
+      await cloudSync(true);                              // full merge on login
       renderAccountUI();
+      // Keep devices converged: pull on focus and on a slow interval.
+      window.addEventListener('focus', () => cloudSync(false));
+      setInterval(() => cloudSync(false), 30000);
     }
 
-    function stateSnapshot() {
+    function sameId(a, b) { return String(a) === String(b); }
+
+    // Pull changes (delta since lastSync, or everything when full) and merge
+    // them into local state, then push whatever is still pending.
+    async function cloudSync(full) {
+      if (!cloud.mode || cloud.pulling) return;
+      cloud.pulling = true;
+      try {
+        const since = full ? 0 : cloud.lastSync;
+        const res = await fetch('/api/sync?since=' + since);
+        if (!res.ok) return;
+        const d = await res.json();
+        cloud.suspend = true;
+        (d.items || []).forEach(row => {
+          const local = items.find(i => sameId(i.id, row.id));
+          if (row.deleted) {
+            if (local && (local.updatedAt || 0) <= row.updatedAt) removeItemLocal(row.id);
+          } else if (row.data) {
+            if (!local || (local.updatedAt || 0) < row.updatedAt) upsertItemLocal(row.data);
+          }
+        });
+        if (d.settings && d.settings.blob && (d.settings.updatedAt || 0) > cloud.settingsSyncedAt && !cloud.settingsDirty) {
+          hydrateSettings(d.settings.blob);
+          cloud.settingsSyncedAt = d.settings.updatedAt;
+        }
+        cloud.suspend = false;
+        if (d.now) cloud.lastSync = d.now;
+        // First login from this device: push everything local so the server
+        // gets anything it didn't already have (per-row merge makes this safe).
+        if (full) {
+          items.forEach(i => cloud.dirty.add(String(i.id)));
+          if (!d.settings || !d.settings.blob) cloud.settingsDirty = true;
+        }
+        refresh();
+        await cloudPushNow();
+      } catch (e) { cloud.suspend = false; }
+      finally { cloud.pulling = false; }
+    }
+
+    function removeItemLocal(id) {
+      items = items.filter(i => !sameId(i.id, id));
+      if (_db) _db.transaction('links', 'readwrite').objectStore('links').delete(id);
+    }
+    function upsertItemLocal(data) {
+      if (!data || data.id == null) return;
+      const idx = items.findIndex(i => sameId(i.id, data.id));
+      if (idx >= 0) items[idx] = data; else items.push(data);
+      if (_db) _db.transaction('links', 'readwrite').objectStore('links').put(data);
+    }
+
+    function settingsSnapshot() {
       return {
-        items, customProjects,
+        customProjects,
         priorityProjects: [...priorityProjects],
         projectParent,
         projectCollapsed: [...projectCollapsed],
         tagOrder, projectMeta
       };
     }
-    function hydrateState(b) {
+    function hydrateSettings(b) {
       if (!b || typeof b !== 'object') return;
-      if (Array.isArray(b.items)) items = b.items;
       if (Array.isArray(b.customProjects)) customProjects = b.customProjects;
       if (Array.isArray(b.priorityProjects)) priorityProjects = new Set(b.priorityProjects);
       if (b.projectParent && typeof b.projectParent === 'object') projectParent = b.projectParent;
@@ -5379,11 +5440,24 @@
     }
     async function cloudPushNow() {
       if (!cloud.mode) return;
+      const dirtyIds = [...cloud.dirty];
+      const delEntries = [...cloud.deletes.entries()];
+      const settingsDirty = cloud.settingsDirty;
+      if (!dirtyIds.length && !delEntries.length && !settingsDirty) return;
+      const payloadItems = [];
+      dirtyIds.forEach(id => { const it = items.find(i => sameId(i.id, id)); if (it) payloadItems.push({ id: String(it.id), data: it, updatedAt: it.updatedAt || Date.now() }); });
+      delEntries.forEach(([id, ts]) => payloadItems.push({ id, deleted: 1, updatedAt: ts }));
+      const body = { items: payloadItems };
+      if (settingsDirty) body.settings = { blob: settingsSnapshot(), updatedAt: Date.now() };
       try {
-        await fetch('/api/state', {
-          method: 'PUT', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(stateSnapshot())
-        });
+        const res = await fetch('/api/sync', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        if (!res.ok) return;
+        const d = await res.json().catch(() => null);
+        if (d && d.now) cloud.lastSync = d.now;
+        dirtyIds.forEach(id => cloud.dirty.delete(id));
+        delEntries.forEach(([id]) => cloud.deletes.delete(id));
+        if (settingsDirty) { cloud.settingsDirty = false; cloud.settingsSyncedAt = body.settings.updatedAt; }
+        persistDeletes();
       } catch (e) {}
     }
     function beginLogin(provider) { location.href = '/api/auth/' + provider + '/login'; }

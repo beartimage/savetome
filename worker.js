@@ -1,7 +1,9 @@
 // ============================================================================
 //  saveto.me — Cloudflare Worker
 //  - OAuth sign-in (Google / GitHub)
-//  - Per-user state sync backed by D1 (a single JSON blob per user)
+//  - Per-user delta sync backed by D1 (per-bookmark rows with timestamps +
+//    tombstones; a small settings blob for projects/tags) — merges concurrent
+//    edits across devices instead of last-write-wins over the whole library
 //  - Everything else falls through to the static assets (the SPA index.html)
 //
 //  Bindings expected (see wrangler.toml + SETUP.md):
@@ -13,7 +15,7 @@
 const SESSION_COOKIE = 'st_sess';
 const OAUTH_COOKIE = 'st_oauth';
 const SESSION_TTL = 60 * 60 * 24 * 30;   // 30 days
-const MAX_STATE_BYTES = 5_000_000;       // 5 MB per-user state cap
+const MAX_SYNC_BYTES = 8_000_000;        // per-request sync payload cap
 
 export default {
   async fetch(request, env) {
@@ -48,29 +50,91 @@ async function handleApi(request, env, url) {
     return json({ user: user || null }, user ? 200 : 401);
   }
 
-  if (path === '/api/state') {
+  if (path === '/api/sync') {
     if (!uid) return json({ error: 'unauthorized' }, 401);
+    await migrateLegacy(env, uid);
+
     if (method === 'GET') {
-      const row = await env.DB.prepare('SELECT blob,updated_at FROM state WHERE user_id=?').bind(uid).first();
-      let blob = null;
-      if (row && row.blob) { try { blob = JSON.parse(row.blob); } catch (e) { blob = null; } }
-      return json({ blob, updatedAt: row ? row.updated_at : 0 });
-    }
-    if (method === 'PUT') {
-      const body = await request.text();
-      if (body.length > MAX_STATE_BYTES) return json({ error: 'state too large' }, 413);
-      try { JSON.parse(body); } catch (e) { return json({ error: 'invalid JSON' }, 400); }
+      const since = Number(url.searchParams.get('since')) || 0;
       const now = Date.now();
-      await env.DB.prepare(
-        'INSERT INTO state (user_id,blob,updated_at) VALUES (?,?,?) ' +
-        'ON CONFLICT(user_id) DO UPDATE SET blob=excluded.blob, updated_at=excluded.updated_at'
-      ).bind(uid, body, now).run();
-      return json({ ok: true, updatedAt: now });
+      const irs = await env.DB.prepare(
+        'SELECT id,data,updated_at,deleted FROM items WHERE user_id=? AND updated_at>?'
+      ).bind(uid, since).all();
+      const items = (irs.results || []).map(r => r.deleted
+        ? { id: r.id, deleted: 1, updatedAt: r.updated_at }
+        : { id: r.id, data: safeParse(r.data), updatedAt: r.updated_at });
+      const srow = await env.DB.prepare('SELECT blob,updated_at FROM settings WHERE user_id=?').bind(uid).first();
+      const settings = srow && srow.blob ? { blob: safeParse(srow.blob), updatedAt: srow.updated_at } : null;
+      return json({ items, settings, now });
+    }
+
+    if (method === 'PUT') {
+      const raw = await request.text();
+      if (raw.length > MAX_SYNC_BYTES) return json({ error: 'payload too large' }, 413);
+      let body; try { body = JSON.parse(raw); } catch (e) { return json({ error: 'invalid JSON' }, 400); }
+      const now = Date.now();
+      // Conditional upsert: only overwrite a row when the incoming change is at
+      // least as new as the stored one — this is what makes the merge safe.
+      const upItem = env.DB.prepare(
+        'INSERT INTO items (user_id,id,data,updated_at,deleted) VALUES (?,?,?,?,?) ' +
+        'ON CONFLICT(user_id,id) DO UPDATE SET data=excluded.data, updated_at=excluded.updated_at, deleted=excluded.deleted ' +
+        'WHERE excluded.updated_at >= items.updated_at'
+      );
+      const stmts = [];
+      if (Array.isArray(body.items)) {
+        for (const it of body.items) {
+          if (!it || it.id == null) continue;
+          const id = String(it.id);
+          const ts = Number(it.updatedAt) || now;
+          if (it.deleted) stmts.push(upItem.bind(uid, id, null, ts, 1));
+          else stmts.push(upItem.bind(uid, id, JSON.stringify(it.data), ts, 0));
+        }
+      }
+      if (body.settings && body.settings.blob !== undefined) {
+        const ts = Number(body.settings.updatedAt) || now;
+        stmts.push(env.DB.prepare(
+          'INSERT INTO settings (user_id,blob,updated_at) VALUES (?,?,?) ' +
+          'ON CONFLICT(user_id) DO UPDATE SET blob=excluded.blob, updated_at=excluded.updated_at ' +
+          'WHERE excluded.updated_at >= settings.updated_at'
+        ).bind(uid, JSON.stringify(body.settings.blob), ts));
+      }
+      if (stmts.length) await env.DB.batch(stmts);
+      return json({ ok: true, now });
     }
   }
 
   return json({ error: 'not found' }, 404);
 }
+
+// One-time expansion of a legacy full-state blob into the per-object tables.
+// No-op once the user has any items/settings row (i.e. after first migration).
+async function migrateLegacy(env, uid) {
+  const it = await env.DB.prepare('SELECT 1 FROM items WHERE user_id=? LIMIT 1').bind(uid).first();
+  if (it) return;
+  const st = await env.DB.prepare('SELECT 1 FROM settings WHERE user_id=? LIMIT 1').bind(uid).first();
+  if (st) return;
+  const row = await env.DB.prepare('SELECT blob,updated_at FROM state WHERE user_id=?').bind(uid).first();
+  if (!row || !row.blob) return;
+  const blob = safeParse(row.blob);
+  if (!blob) return;
+  const ts = row.updated_at || Date.now();
+  const stmts = [];
+  const items = Array.isArray(blob.items) ? blob.items : [];
+  const upItem = env.DB.prepare('INSERT OR IGNORE INTO items (user_id,id,data,updated_at,deleted) VALUES (?,?,?,?,0)');
+  for (const b of items) {
+    if (!b || b.id == null) continue;
+    stmts.push(upItem.bind(uid, String(b.id), JSON.stringify(b), Number(b.updatedAt) || ts));
+  }
+  const settings = {};
+  for (const k of ['customProjects', 'priorityProjects', 'projectParent', 'projectCollapsed', 'tagOrder', 'projectMeta']) {
+    if (blob[k] !== undefined) settings[k] = blob[k];
+  }
+  stmts.push(env.DB.prepare('INSERT OR IGNORE INTO settings (user_id,blob,updated_at) VALUES (?,?,?)')
+    .bind(uid, JSON.stringify(settings), ts));
+  if (stmts.length) await env.DB.batch(stmts);
+}
+
+function safeParse(s) { try { return JSON.parse(s); } catch (e) { return null; } }
 
 // ---------------------------------------------------------------- OAuth flow
 

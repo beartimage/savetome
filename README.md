@@ -46,8 +46,11 @@ shown in compact/detailed and list/grid views. Everything runs client-side.
   to ~100k links both fully client-side **and** synced to the cloud; beyond that, move to
   server-side search/pagination (Postgres + a search index).
 - Favicons are fetched from Google's favicon service; website previews (in the
-  Pinterest view) are fetched from WordPress mShots — both send the URL/domain to a
-  third party. These are the only external requests.
+  Pinterest view) are fetched from WordPress mShots; and the Plus Jakarta Sans
+  webfont is loaded from Google Fonts — all three send the URL/domain (and, for
+  the font, your IP) to a third party. Signing in additionally uses Google/GitHub
+  OAuth (opt-in). Apart from these, nothing leaves the browser — the tagger,
+  storage, and search all run on-device.
 - No real page-title/description fetch (blocked by CORS client-side); title is
   derived from the URL and the description from the on-device classifier.
 

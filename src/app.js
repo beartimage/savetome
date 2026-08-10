@@ -45,6 +45,19 @@ import './styles.css';
     // --- Small shared helpers ---------------------------------------------------
     function htmlAttr(s) { return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
     function jsAttr(s) { return htmlAttr(String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'")); }
+    // Escape untrusted text/attribute values before putting them in innerHTML.
+    // Bookmark titles, descriptions, notes, tags, project names and URLs are all
+    // user-controlled (typed or imported) and must never be treated as markup.
+    function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+    // Only allow safe link schemes in href/src — blocks javascript:, data:, etc.
+    // Returns an escaped, attribute-safe string ('#' for anything suspicious).
+    function safeUrl(u) {
+      const raw = String(u == null ? '' : u).trim();
+      if (/^(https?:|mailto:|tel:|ftp:)/i.test(raw)) return esc(raw);
+      if (/^(\/|#|\?|\.)/.test(raw)) return esc(raw);           // relative/in-page links
+      if (raw && !/^[a-z][a-z0-9+.-]*:/i.test(raw)) return esc(raw); // scheme-less (e.g. example.com/x)
+      return '#';                                               // javascript:, data:, vbscript:, …
+    }
     function normalizeUrl(u) {
       try { const x = new URL(u); return (x.host + x.pathname).replace(/\/$/, '').toLowerCase() + x.search.toLowerCase(); }
       catch (_) { return String(u).toLowerCase(); }
@@ -764,13 +777,19 @@ import './styles.css';
     function projectIconHtml(name) {
       const m = projectMeta[name];
       if (m && m.icon && ICON_LIB[m.icon]) return ICON_LIB[m.icon];
-      if (m && m.emoji) return `<span class="proj-emoji">${m.emoji}</span>`;   // legacy data
+      if (m && m.emoji) return `<span class="proj-emoji">${esc(m.emoji)}</span>`;   // legacy data
       if (priorityProjects.has(name)) return ICONS.star;
       // Sub-folders (nested under a parent project) get a distinct open-folder icon.
       if (projectParent[name]) return ICONS.subfolder;
       return ICONS.folder;
     }
-    function projectColor(name) { const m = projectMeta[name]; return (m && m.color) ? m.color : null; }
+    function projectColor(name) { const m = projectMeta[name]; return (m && m.color) ? safeColor(m.color) : null; }
+    // Only allow simple CSS color tokens so imported/synced metadata can't break out
+    // of a style="" attribute (e.g. `red" onmouseover=...`).
+    function safeColor(c) {
+      const s = String(c == null ? '' : c).trim();
+      return /^(#[0-9a-fA-F]{3,8}|[a-zA-Z]+|rgb\(\s*[\d.,%\s]+\)|rgba\(\s*[\d.,%\s]+\)|hsl\(\s*[\d.,%\s]+\)|hsla\(\s*[\d.,%\s]+\))$/.test(s) ? s : null;
+    }
 
     let _fcName = null;
     function openFolderCustomize(e, name) {
@@ -908,7 +927,7 @@ import './styles.css';
       div.innerHTML = `
         ${caret}
         <span class="nav-icon"${projectColor(projectName) ? ` style="color:${projectColor(projectName)}"` : ''}>${projectIconHtml(projectName)}</span>
-        <span class="nav-label">${projectName}</span>
+        <span class="nav-label">${esc(projectName)}</span>
         <span class="nav-right">
           <button class="proj-act" title="Customize" onclick="openFolderCustomize(event, '${jsAttr(projectName)}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r="2.5"/><circle cx="6.5" cy="12" r="2.5"/><circle cx="16" cy="15" r="2.5"/><circle cx="8" cy="19" r="2"/></svg></button>
           <button class="proj-act${isPriority ? ' on' : ''}" title="${isPriority ? 'Remove favorite' : 'Mark as favorite'}" onclick="togglePriority(event, '${jsAttr(projectName)}')">${ICONS.star}</button>
@@ -1013,7 +1032,7 @@ import './styles.css';
           const chip = document.createElement('button');
           chip.className = `tag-chip-active ${getTagColorClass(t)}`;
           chip.title = 'Remove from filter';
-          chip.innerHTML = `#${t}<span class="chip-x">×</span>`;
+          chip.innerHTML = `#${esc(t)}<span class="chip-x">×</span>`;
           chip.onclick = () => filterTag(t);
           bar.appendChild(chip);
         });
@@ -1059,7 +1078,7 @@ import './styles.css';
           el.classList.remove('drop-before', 'drop-after');
           reorderTag(draggedName, t, after);
         };
-        el.innerHTML = `#${t} <span class="tag-nav-count">${counts[t]}</span>`;
+        el.innerHTML = `#${esc(t)} <span class="tag-nav-count">${counts[t]}</span>`;
         c.appendChild(el);
       });
       if (tags.length > TAG_LIMIT) {
@@ -1101,7 +1120,7 @@ import './styles.css';
         const el = document.createElement('button');
         el.className = `tag-nav ${getTagColorClass(t)}${active ? ' active' : ''}`;
         el.onclick = () => { filterTag(t); closeTagsModal(); };
-        el.innerHTML = `#${t} <span class="tag-nav-count">${counts[t]}</span>`;
+        el.innerHTML = `#${esc(t)} <span class="tag-nav-count">${counts[t]}</span>`;
         const ren = document.createElement('button');
         ren.className = 'tag-add';
         ren.title = 'Rename / merge tag';
@@ -1229,17 +1248,17 @@ import './styles.css';
       };
 
       const tagsHtml = (item.autoTags || []).map(tag =>
-        `<span class="tag ${getTagColorClass(tag)}" title="Filter by #${htmlAttr(tag)}" onclick="filterTag('${jsAttr(tag)}')">#${tag}<button class="tag-x" title="Remove tag" onclick="event.stopPropagation(); removeTag(${item.id}, '${jsAttr(tag)}')">×</button></span>`
+        `<span class="tag ${getTagColorClass(tag)}" title="Filter by #${htmlAttr(tag)}" onclick="filterTag('${jsAttr(tag)}')">#${esc(tag)}<button class="tag-x" title="Remove tag" onclick="event.stopPropagation(); removeTag(${item.id}, '${jsAttr(tag)}')">×</button></span>`
       ).join('');
 
       const suggHtml = (item.suggestedTags || []).map(tag =>
-        `<span class="tag tag-suggested" title="Suggested tag">#${tag}<button class="tag-confirm" title="Keep tag" onclick="confirmSuggested(${item.id}, '${jsAttr(tag)}')">✓</button><button class="tag-x" title="Dismiss" onclick="dismissSuggested(${item.id}, '${jsAttr(tag)}')">×</button></span>`
+        `<span class="tag tag-suggested" title="Suggested tag">#${esc(tag)}<button class="tag-confirm" title="Keep tag" onclick="confirmSuggested(${item.id}, '${jsAttr(tag)}')">✓</button><button class="tag-x" title="Dismiss" onclick="dismissSuggested(${item.id}, '${jsAttr(tag)}')">×</button></span>`
       ).join('');
 
       div.innerHTML = `
         ${item.pinned ? `<span class="pin-flag" title="Pinned">${ICONS.pin || ICONS.star}</span>` : ''}
-        <div class="item-thumb-wrap" data-domain="${item.domain}">
-          <img class="item-thumb" loading="lazy" alt="Preview of ${item.domain}"
+        <div class="item-thumb-wrap" data-domain="${esc(item.domain)}">
+          <img class="item-thumb" loading="lazy" alt="Preview of ${esc(item.domain)}"
             data-src="https://s.wordpress.com/mshots/v1/${encodeURIComponent(item.url)}?w=520&h=326"
             onerror="this.closest('.item-thumb-wrap').classList.add('thumb-failed')" />
           <div class="item-hover-actions">
@@ -1248,25 +1267,25 @@ import './styles.css';
         </div>
 
         <div class="item-site">
-          <img class="item-favicon" src="https://www.google.com/s2/favicons?domain=${item.domain}&sz=32" alt="icon" />
-          <a href="${item.url}" target="_blank" class="item-domain" title="Open link in new tab" onclick="markOpened(${item.id})">${item.domain}</a>
+          <img class="item-favicon" src="https://www.google.com/s2/favicons?domain=${encodeURIComponent(item.domain || '')}&sz=32" alt="icon" />
+          <a href="${safeUrl(item.url)}" target="_blank" rel="noopener noreferrer" class="item-domain" title="Open link in new tab" onclick="markOpened(${item.id})">${esc(item.domain)}</a>
           ${item.snoozedUntil && item.snoozedUntil > Date.now() ? `<span class="item-age" title="Snoozed">💤</span>` : ''}
         </div>
 
         <div class="item-main-content">
-          <a href="${item.url}" target="_blank" class="item-title" title="Open link in new tab" onclick="markOpened(${item.id})">${item.title}</a>
-          <div class="item-description">${item.description}</div>
+          <a href="${safeUrl(item.url)}" target="_blank" rel="noopener noreferrer" class="item-title" title="Open link in new tab" onclick="markOpened(${item.id})">${esc(item.title)}</a>
+          <div class="item-description">${esc(item.description)}</div>
           <div
             class="item-note"
             contenteditable="true"
             onblur="updateNote(${item.id}, this.innerText)"
             onkeydown="handleNoteKey(event)"
             title="Click to edit note"
-          >${item.note || 'Click to add note...'}</div>
+          >${item.note ? esc(item.note) : 'Click to add note...'}</div>
         </div>
 
         <div class="item-meta">
-          <span class="tag tag-project" title="Filter by project" onclick="filterProject('${jsAttr(item.project)}')"><span class="tag-ic"${accent ? ` style="color:${accent}"` : ''}>${projectIconHtml(item.project)}</span>${item.project}</span>
+          <span class="tag tag-project" title="Filter by project" onclick="filterProject('${jsAttr(item.project)}')"><span class="tag-ic"${accent ? ` style="color:${accent}"` : ''}>${projectIconHtml(item.project)}</span>${esc(item.project)}</span>
           ${tagsHtml}
           ${suggHtml}
           <button class="tag-add" title="Add tag" onclick="addTagToItem(${item.id})">+</button>
@@ -1601,11 +1620,11 @@ import './styles.css';
         const CH = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>';
         let path = `<button class="sf-pcrumb sf-pcrumb-home" onclick="showAll()" title="All links">${HOME}<span>All</span></button>`;
         chain.slice(0, -1).forEach(name => {
-          path += `<span class="sf-psep">${CH}</span><button class="sf-pcrumb" onclick="filterProject('${jsAttr(name)}')">${name}</button>`;
+          path += `<span class="sf-psep">${CH}</span><button class="sf-pcrumb" onclick="filterProject('${jsAttr(name)}')">${esc(name)}</button>`;
         });
         html += `<div class="sf-path">${path}</div>`;
       }
-      html += `<div class="sf-name-row"><span class="sf-name">${cur}</span><span class="sf-count-badge">${total}</span></div>`;
+      html += `<div class="sf-name-row"><span class="sf-name">${esc(cur)}</span><span class="sf-count-badge">${total}</span></div>`;
       html += '</div></div>';
 
       // Right: grouped action buttons — safe actions, a divider, then Delete.
@@ -1628,7 +1647,7 @@ import './styles.css';
           ondragleave="this.classList.remove('sf-drop');"
           ondrop="sfChipDrop(event,this,'${jsAttr(k)}')">
           <span class="sf-chip-ic"${projectColor(k) ? ` style="background:${projectColor(k)}22;color:${projectColor(k)}"` : ''}>${projectIconHtml(k)}</span>
-          <span class="sf-chip-name">${k}</span>
+          <span class="sf-chip-name">${esc(k)}</span>
           <span class="sf-chip-count">${rollupCount(k, counts, all)}</span></button>`;
       });
       html += `<button class="sf-chip sf-add" onclick="addSubfolder(event, '${jsAttr(cur)}')" title="New sub-folder">${ICONS.folderPlus}<span>New folder</span></button>`;
@@ -1725,7 +1744,7 @@ import './styles.css';
           ondragleave="this.classList.remove('sf-drop');"
           ondrop="sfChipDrop(event,this,'${jsAttr(k)}')">
           <span class="sf-chip-ic"${projectColor(k) ? ` style="background:${projectColor(k)}22;color:${projectColor(k)}"` : ''}>${projectIconHtml(k)}</span>
-          <span class="sf-chip-name">${k}</span>
+          <span class="sf-chip-name">${esc(k)}</span>
           <span class="sf-chip-count">${rollupCount(k, counts, all)}</span></button>`;
       });
       if (extra > 0) html += `<button class="sf-more" onclick="expandAllFolders()" title="Show all folders">+${extra} more</button>`;
@@ -2156,7 +2175,7 @@ import './styles.css';
           i.title.toLowerCase().includes(q) || i.domain.toLowerCase().includes(q) || (i.description || '').toLowerCase().includes(q)
         ).slice(0, 8).map(i => ({
           type: 'link', label: i.title, sub: i.domain,
-          icon: `<img src="https://www.google.com/s2/favicons?domain=${i.domain}&sz=32" alt="" style="width:18px;height:18px;border-radius:4px" />`,
+          icon: `<img src="https://www.google.com/s2/favicons?domain=${encodeURIComponent(i.domain || '')}&sz=32" alt="" style="width:18px;height:18px;border-radius:4px" />`,
           run: () => { window.open(i.url, '_blank'); }
         }));
         if (links.length) groups.push({ label: 'Links', rows: links });
@@ -2165,7 +2184,7 @@ import './styles.css';
         const recents = items.slice().sort((a, b) => (itemTimestamp(b) || b.id) - (itemTimestamp(a) || a.id))
           .slice(0, 5).map(i => ({
             type: 'link', label: i.title, sub: i.domain,
-            icon: `<img src="https://www.google.com/s2/favicons?domain=${i.domain}&sz=32" alt="" style="width:18px;height:18px;border-radius:4px" />`,
+            icon: `<img src="https://www.google.com/s2/favicons?domain=${encodeURIComponent(i.domain || '')}&sz=32" alt="" style="width:18px;height:18px;border-radius:4px" />`,
             run: () => { window.open(i.url, '_blank'); }
           }));
         if (recents.length) groups.push({ label: 'Recent', rows: recents });

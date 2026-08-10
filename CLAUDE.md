@@ -150,7 +150,11 @@ inline-editable notes, drag-and-drop into folders, client-side search.
 1. ~~Persistence~~ — **done** (IndexedDB, see above).
 2. Optional: real title/description fetch (needs a proxy/worker — CORS blocks client-side).
 3. Optional: opt-in real-LLM tagging (Cloudflare Worker + API key) — declined for now to stay backend-free.
-4. Privacy: previews send full URL to WordPress mShots; favicons send domain to Google.
+4. Privacy: previews send full URL to WordPress mShots; favicons send domain to
+   Google; the Plus Jakarta Sans webfont loads from Google Fonts (sends IP). These
+   are the only unconditional third-party requests. OAuth (Google/GitHub) is opt-in
+   at sign-in. To make the app fully self-contained, self-host the font (drop the
+   `@import` in `src/styles.css` for local `@font-face` + `woff2` files).
 5. Beyond ~100k links: move data server-side (Postgres + Meilisearch/Typesense, cursor pagination, per-user sharding).
 
 ## Testing checklist (after edits)

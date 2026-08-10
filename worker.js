@@ -98,7 +98,7 @@ async function handleApi(request, env, url) {
           'WHERE excluded.updated_at >= settings.updated_at'
         ).bind(uid, JSON.stringify(body.settings.blob), ts));
       }
-      if (stmts.length) await env.DB.batch(stmts);
+      if (stmts.length) await runBatched(env, stmts);
       return json({ ok: true, now });
     }
   }
@@ -131,10 +131,19 @@ async function migrateLegacy(env, uid) {
   }
   stmts.push(env.DB.prepare('INSERT OR IGNORE INTO settings (user_id,blob,updated_at) VALUES (?,?,?)')
     .bind(uid, JSON.stringify(settings), ts));
-  if (stmts.length) await env.DB.batch(stmts);
+  if (stmts.length) await runBatched(env, stmts);
 }
 
 function safeParse(s) { try { return JSON.parse(s); } catch (e) { return null; } }
+
+// D1 caps the number of statements per batch(); run them in bounded chunks so a
+// large first-time/full sync doesn't blow the limit.
+const BATCH_SIZE = 50;
+async function runBatched(env, stmts) {
+  for (let i = 0; i < stmts.length; i += BATCH_SIZE) {
+    await env.DB.batch(stmts.slice(i, i + BATCH_SIZE));
+  }
+}
 
 // ---------------------------------------------------------------- OAuth flow
 
@@ -197,9 +206,17 @@ async function oauthCallback(provider, request, env, url) {
   if (provider === 'google') {
     const claims = decodeJwtPayload(tok.id_token);
     if (!claims || !claims.sub) { console.error('google id_token decode failed'); return redirect('/?auth=error&e=gclaims'); }
+    // The id_token comes straight from Google's token endpoint over TLS, but
+    // validate audience/issuer anyway so a token minted for another client can
+    // never be accepted here.
+    const issOk = claims.iss === 'https://accounts.google.com' || claims.iss === 'accounts.google.com';
+    if (claims.aud !== env.GOOGLE_CLIENT_ID || !issOk) {
+      console.error('google id_token claim mismatch', { aud: claims.aud, iss: claims.iss });
+      return redirect('/?auth=error&e=gclaims');
+    }
     profile = { pid: claims.sub, email: claims.email || '', name: claims.name || claims.email || 'Account', avatar: claims.picture || '' };
   } else {
-    const ghHeaders = { Authorization: 'Bearer ' + tok.access_token, 'User-Agent': 'savetome', Accept: 'application/vnd.github+json' };
+    const ghHeaders = { Authorization: 'Bearer ' + tok.access_token, 'User-Agent': 'saveto-me-app/1.0', Accept: 'application/vnd.github+json' };
     const gu = await (await fetch('https://api.github.com/user', { headers: ghHeaders })).json().catch(() => null);
     if (!gu || !gu.id) { console.error('github /user fetch failed', JSON.stringify(gu)); return redirect('/?auth=error&e=ghuser'); }
     let email = gu.email || '';
@@ -268,8 +285,9 @@ function b64url(buf) {
 }
 function b64urlStr(str) { return b64url(enc(str)); }
 function b64urlBytes(s) {
-  s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '=';
-  const bin = atob(s); const out = new Uint8Array(bin.length);
+  s = String(s || '').replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '=';
+  let bin; try { bin = atob(s); } catch (e) { return new Uint8Array(0); }
+  const out = new Uint8Array(bin.length);
   for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
   return out;
 }

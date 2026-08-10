@@ -25,19 +25,26 @@ shown in compact/detailed and list/grid views. Everything runs client-side.
   not pills); click one to filter. The sidebar shows the top 10; "Show all" opens a
   searchable tags modal.
 - **Themes** — Light, Dark, Green, Red, Black (OLED), and Gold. Picker in the header ⋮ menu; choice persists.
-- **Accounts + cloud sync (optional)** — sign in with Google or GitHub to sync your
+- **Accounts + cloud sync (optional)** — sign in with Google to sync your
   library across devices. Backed by a Cloudflare Worker + D1; the app still works
   fully local-only with no account. See **SETUP.md**.
 
 ## Known gaps / next steps
 - **Persistence: done** — links live in **IndexedDB** (`savemeDB`), loaded into memory on
   boot and written through on every change. Survives reloads; no 5 MB localStorage cap.
-  First run seeds the store with the built-in sample links. Signed in, the same state is
-  mirrored to the cloud (one JSON blob per user in D1).
+  First run seeds the store with the built-in sample links. Signed in, each bookmark is
+  synced as its own row in D1 (delta sync — see below).
+- **Cloud sync: per-object delta sync** — each bookmark is an individual D1 row with its
+  own `updated_at` (plus deletion tombstones); changes are merged **per row**, so editing
+  on two devices at once no longer clobbers the whole library. There is **no 5 MB
+  whole-library cap** — pushes are sent in bounded batches, so cloud sync scales with the
+  same ~100k-link headroom as local storage (not "substantially less"). Projects/tags/view
+  prefs travel as one small versioned settings blob.
 - **Scale** — the list renders in **chunks of 80** (windowed / infinite scroll via an
   IntersectionObserver sentinel), so 100k+ links never build 100k DOM nodes at once.
   The sidebar tag list is capped to the **top 20** with a "Show all" toggle. Comfortable
-  to ~100k links fully client-side; beyond that, move the per-user state blob to per-row storage.
+  to ~100k links both fully client-side **and** synced to the cloud; beyond that, move to
+  server-side search/pagination (Postgres + a search index).
 - Favicons are fetched from Google's favicon service; website previews (in the
   Pinterest view) are fetched from WordPress mShots — both send the URL/domain to a
   third party. These are the only external requests.

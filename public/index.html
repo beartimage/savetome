@@ -5444,20 +5444,29 @@
       const delEntries = [...cloud.deletes.entries()];
       const settingsDirty = cloud.settingsDirty;
       if (!dirtyIds.length && !delEntries.length && !settingsDirty) return;
-      const payloadItems = [];
-      dirtyIds.forEach(id => { const it = items.find(i => sameId(i.id, id)); if (it) payloadItems.push({ id: String(it.id), data: it, updatedAt: it.updatedAt || Date.now() }); });
-      delEntries.forEach(([id, ts]) => payloadItems.push({ id, deleted: 1, updatedAt: ts }));
-      const body = { items: payloadItems };
-      if (settingsDirty) body.settings = { blob: settingsSnapshot(), updatedAt: Date.now() };
+      // Build the full change list, then send it in bounded batches so a large
+      // library (e.g. a first-login push of 100k+ items) never exceeds the
+      // worker's per-request cap. Each batch clears only the ids it confirmed.
+      const changes = [];
+      dirtyIds.forEach(id => { const it = items.find(i => sameId(i.id, id)); if (it) changes.push({ id: String(it.id), data: it, updatedAt: it.updatedAt || Date.now() }); });
+      delEntries.forEach(([id, ts]) => changes.push({ id, deleted: 1, updatedAt: ts }));
+      const CHUNK = 500;
+      let settingsSent = false;
       try {
-        const res = await fetch('/api/sync', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-        if (!res.ok) return;
-        const d = await res.json().catch(() => null);
-        if (d && d.now) cloud.lastSync = d.now;
-        dirtyIds.forEach(id => cloud.dirty.delete(id));
-        delEntries.forEach(([id]) => cloud.deletes.delete(id));
-        if (settingsDirty) { cloud.settingsDirty = false; cloud.settingsSyncedAt = body.settings.updatedAt; }
-        persistDeletes();
+        let i = 0;
+        do {
+          const batch = changes.slice(i, i + CHUNK);
+          const body = { items: batch };
+          if (settingsDirty && !settingsSent) body.settings = { blob: settingsSnapshot(), updatedAt: Date.now() };
+          const res = await fetch('/api/sync', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+          if (!res.ok) return;   // keep remaining dirty ids for the next attempt
+          const d = await res.json().catch(() => null);
+          if (d && d.now) cloud.lastSync = d.now;
+          batch.forEach(ch => { if (ch.deleted) cloud.deletes.delete(ch.id); else cloud.dirty.delete(ch.id); });
+          if (body.settings) { cloud.settingsDirty = false; cloud.settingsSyncedAt = body.settings.updatedAt; settingsSent = true; }
+          persistDeletes();
+          i += CHUNK;
+        } while (i < changes.length);
       } catch (e) {}
     }
     function beginLogin(provider) { location.href = '/api/auth/' + provider + '/login'; }

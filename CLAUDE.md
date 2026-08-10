@@ -16,9 +16,9 @@ inline-editable notes, drag-and-drop into folders, client-side search.
 ```
 ~/Desktop/saveto.me/
 ├── public/index.html   # entire SPA (HTML + CSS + JS in one file)
-├── worker.js           # Cloudflare Worker: OAuth + /api/state sync + asset fallthrough
+├── worker.js           # Cloudflare Worker: OAuth + /api/sync delta sync + asset fallthrough
 ├── wrangler.toml       # Worker config (assets dir=public, D1 binding, client-id vars)
-├── schema.sql          # D1 tables (users, state)
+├── schema.sql          # D1 tables (users, items, settings; legacy state kept for migration)
 ├── SETUP.md            # one-time backend setup (OAuth apps, D1, secrets, deploy)
 ├── README.md
 ├── CLAUDE.md           # this file
@@ -28,18 +28,35 @@ inline-editable notes, drag-and-drop into folders, client-side search.
 ## Accounts + cloud sync (optional backend)
 - **Deployed as a Cloudflare Worker** (`worker.js`) that handles `/api/*` and falls
   through to the static assets in `public/` for everything else.
-- **Auth**: OAuth (Google + GitHub). Login flow: `/api/auth/:provider/login` →
-  provider → `/api/auth/:provider/callback` → upsert `users` row → signed-JWT session
+- **Auth**: OAuth (**Google only** — GitHub login button removed from the UI; the
+  worker's `/api/auth/github/*` routes still exist but are unreachable). Login flow:
+  `/api/auth/google/login` →
+  provider → `/api/auth/google/callback` → upsert `users` row → signed-JWT session
   cookie (`st_sess`, HttpOnly/Secure/SameSite=Lax, 30d). CSRF via signed `st_oauth`
   state cookie. HS256 JWT signed with `SESSION_SECRET` (WebCrypto HMAC). Redirect URI
   derived from request origin (works on workers.dev and any custom domain registered
-  in the OAuth apps).
-- **Sync model**: one JSON **state blob per user** in D1 (`state` table) — matches the
-  app's "load everything into memory" model. `GET /api/state` hydrates; `PUT /api/state`
-  saves. Frontend `cloudInit()` runs after `initStore()`: `GET /api/me` → if signed in,
-  pull server state (or seed it from local on first login), then every DB write helper
-  (`dbPut`/`dbPutMany`/`dbDelete`/`dbDeleteMany`/`dbSaveProjects`) triggers a debounced
-  `PUT /api/state` (800ms). `cloud.suspend` guards against echo during hydration.
+  in the OAuth app).
+- **Sync model**: **per-bookmark delta sync** (replaced the old single JSON blob,
+  which was last-write-wins and lost concurrent edits across devices). Each bookmark
+  is its own row in D1 `items` (`user_id,id,data,updated_at,deleted`); deletions are
+  **tombstones** (`deleted=1`, kept so a stale device can't resurrect an item).
+  Projects/tags/view prefs ride along as one small versioned blob in D1 `settings`.
+  - `GET /api/sync?since=<ts>` returns items changed since `ts` + settings + server
+    `now`. `PUT /api/sync` takes `{items:[{id,data,updatedAt}|{id,deleted:1,updatedAt}],
+    settings:{blob,updatedAt}}` and **conditionally upserts** each row
+    (`ON CONFLICT ... WHERE excluded.updated_at >= <table>.updated_at`) — this per-row
+    merge is what stops one device clobbering another.
+  - Frontend: every DB write helper stamps `item.updatedAt = Date.now()` and tracks
+    `cloud.dirty` (changed ids) + `cloud.deletes` (id→ts tombstones, persisted to the
+    `meta` store so an offline delete survives reload). `cloudInit()` after `initStore()`:
+    `GET /api/me` → if signed in, `cloudSync(true)` does a full bidirectional merge
+    (pull server rows newer than local; then mark all local items dirty and push).
+    `cloudSchedulePush()` debounces `cloudPushNow()` 800ms; devices converge via a pull
+    on window `focus` + a 30s interval. `cloud.suspend` guards against echo during merge.
+  - **Legacy migration is automatic**: `migrateLegacy(env,uid)` in worker.js expands a
+    pre-existing `state` blob into `items`+`settings` on first `/api/sync` (uses
+    `INSERT OR IGNORE`; the old `state` row is left untouched as a backup). The `state`
+    table is retained only for this.
 - **Graceful degradation**: if `/api/me` fails (file://, plain static host, or 404),
   the app stays in local-only mode — nothing breaks. Account UI lives in the sidebar
   footer `.profile-row` (`renderAccountUI`): Sign in button → login modal
@@ -70,7 +87,12 @@ inline-editable notes, drag-and-drop into folders, client-side search.
   DB on boot, loads `items` into memory (falls back to in-memory if IDB is unavailable),
   and **seeds** with the built-in samples on first run. Mutations write through with
   targeted helpers — `dbPut`/`dbPutMany`/`dbDelete`/`dbDeleteMany`/`dbSaveProjects` — never
-  rewriting the whole store.
+  rewriting the whole store. Each helper stamps `item.updatedAt` and flags the change for
+  delta sync (see the cloud-sync section).
+- **Cloud scale** — there is **no 5 MB whole-library cap** (the old `MAX_STATE_BYTES` blob
+  limit is gone). `cloudPushNow()` sends changes in batches of `CHUNK` (500) items so even a
+  first-login push of a 100k-item library stays under the worker's per-request cap
+  (`MAX_SYNC_BYTES` 8 MB). Cloud sync scales with the same ~100k headroom as local storage.
 - **Chunked rendering** — `renderItems` sets `_visible` then `renderNextChunk()` appends
   `CHUNK` (80) cards at a time; an IntersectionObserver on a `#scroll-sentinel` (sibling of
   `#linkList` inside `.content-scroll`, `rootMargin:600px`) loads the next batch. Any

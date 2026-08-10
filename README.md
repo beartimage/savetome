@@ -10,8 +10,8 @@ shown in compact/detailed and list/grid views. Everything runs client-side.
   scores, dedupes, and normalizes tags and writes a short description. Fully in the
   browser, no backend or API key.
 - **Projects** — sidebar folders with live counts. **Auto-created**: saving a link with no
-  active project makes a topical project from its strongest tag (or domain). **Manual**
-  projects are "priority" — they sort first and show a ★ star (auto ones show a folder).
+  active folder makes a topical folder from its strongest tag (or domain). **Manual**
+  folders are "priority" — they sort first and show a ★ star (auto ones show a folder).
 - **Collapsible sidebar** — the brand-row chevron collapses it to an icon rail; the choice persists.
 - **Drag & drop** — drag a link card onto a project folder to move it.
 - **Views** — a single switch: **Lines** (compact list) or **Pinterest** (grid masonry with

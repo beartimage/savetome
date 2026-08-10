@@ -67,7 +67,7 @@
       <div class="nav-section acc" data-acc="projects">
         <div class="section-header acc-header" onclick="toggleSection('projects')">
           <span class="acc-caret"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>
-          <span class="section-title">Projects</span>
+          <span class="section-title">Folders</span>
         </div>
         <div class="nav-section-body">
           <div id="project-list"></div>
@@ -88,7 +88,7 @@
     <div class="sidebar-footer">
       <div class="nav-item" onclick="addNewProject()">
         <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></span>
-        <span class="nav-label">Add project</span>
+        <span class="nav-label">Add folder</span>
       </div>
       <div class="profile-row">
         <div class="profile-av">Me</div>
@@ -245,7 +245,7 @@
         <div class="settings-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m8 11 4 4 4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg></div>
         <div class="settings-card-body">
           <div class="settings-card-title">Import bookmarks</div>
-          <p class="settings-card-desc">Import a bookmarks file exported from Chrome, Firefox, Safari, or Edge (an <b>.html</b> file), or a saveto.me <b>.json</b> backup. Folders become projects; duplicates are skipped.</p>
+          <p class="settings-card-desc">Import a bookmarks file exported from Chrome, Firefox, Safari, or Edge (an <b>.html</b> file), or a saveto.me <b>.json</b> backup. Browser folders become folders; duplicates are skipped.</p>
           <div class="settings-card-actions">
             <label class="modal-btn primary" for="importFile">Choose file to import…</label>
             <input id="importFile" type="file" accept=".html,.htm,.json,text/html,application/json" style="display:none" onchange="handleImportFile(event)" />
@@ -369,14 +369,14 @@
     </div>
   </div>
 
-  <!-- Organize modal (bulk auto-file into projects) -->
+  <!-- Organize modal (bulk auto-file into folders) -->
   <div class="modal-overlay" id="organizeOverlay" onclick="if(event.target===this)closeOrganize()">
     <div class="modal" role="dialog" aria-modal="true" aria-label="Organize links">
       <div class="modal-head">
         <h2 class="modal-title">Auto-organize</h2>
         <button class="modal-close" onclick="closeOrganize()" title="Close" aria-label="Close">×</button>
       </div>
-      <p class="modal-hint">Suggests a better project for links currently in <b>auto-created</b> folders, based on each link's strongest tag or site. Your manually-created (starred) projects are never touched. Uncheck any you want to leave alone.</p>
+      <p class="modal-hint">Suggests a better folder for links currently in <b>auto-created</b> folders, based on each link's strongest tag or site. Your manually-created (starred) folders are never touched. Uncheck any you want to leave alone.</p>
       <div class="modal-status" id="organizeStatus"></div>
       <div id="organizeList" class="health-list"></div>
       <div class="health-foot" id="organizeFoot" style="display:none">

@@ -1979,6 +1979,11 @@
     @media (max-width: 820px) {
       body { height: 100dvh; }
 
+      /* Mobile list (Lines) view: hide the hashtag tags and the add-tag button
+         to keep rows compact. The folder chip and pin/delete stay. */
+      .view-list .item-meta .tag:not(.tag-project),
+      .view-list .item-meta .tag-add { display: none; }
+
       /* Sidebar → fixed drawer that slides in from the left */
       aside {
         position: fixed; top: 0; left: 0; z-index: 60;

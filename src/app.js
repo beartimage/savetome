@@ -386,7 +386,7 @@ import { recordTagOverride, hostMatchesPattern, normalizeTag, prettifyTitle, gen
     }
 
     async function addNewProject() {
-      const name = await uiPrompt({ title: 'New project', message: 'Give your project a name.', okLabel: 'Create', icon: 'folderPlus' });
+      const name = await uiPrompt({ title: 'New folder', message: 'Give your folder a name.', okLabel: 'Create', icon: 'folderPlus' });
       if (name && name.trim()) {
         const cleanName = name.trim();
         if (!customProjects.includes(cleanName)) {
@@ -411,7 +411,7 @@ import { recordTagOverride, hostMatchesPattern, normalizeTag, prettifyTitle, gen
 
     async function renameProject(e, name) {
       e.stopPropagation();
-      const nn = await uiPrompt({ title: 'Rename project', value: name, okLabel: 'Rename', icon: 'edit' });
+      const nn = await uiPrompt({ title: 'Rename folder', value: name, okLabel: 'Rename', icon: 'edit' });
       if (!nn || !nn.trim()) return;
       const clean = nn.trim();
       if (clean === name) return;
@@ -452,7 +452,7 @@ import { recordTagOverride, hostMatchesPattern, normalizeTag, prettifyTitle, gen
       dbPutMany(moved);
       dbSaveProjects();
       refresh();
-      showToast(`Deleted project "${name}"`);
+      showToast(`Deleted folder "${name}"`);
     }
 
     // Star = "my project" (manually mine); unstarred = auto-generated. User-controlled.
@@ -665,7 +665,7 @@ import { recordTagOverride, hostMatchesPattern, normalizeTag, prettifyTitle, gen
         const matches = all.filter(p => p.toLowerCase().includes(projectQuery))
           .sort((a, b) => (priorityProjects.has(b) - priorityProjects.has(a)) ||
             (rollupCount(b, counts, all) - rollupCount(a, counts, all)) || a.localeCompare(b));
-        if (!matches.length) { projectContainer.innerHTML = '<div class="tag-empty">No projects match</div>'; return; }
+        if (!matches.length) { projectContainer.innerHTML = '<div class="tag-empty">No folders match</div>'; return; }
         matches.forEach(p => projectContainer.appendChild(makeProjectRow(p, 0, counts, all, false)));
         return;
       }
@@ -676,7 +676,7 @@ import { recordTagOverride, hostMatchesPattern, normalizeTag, prettifyTitle, gen
       roots.sort((a, b) => (priorityProjects.has(b) - priorityProjects.has(a)) ||
         (rollupCount(b, counts, all) - rollupCount(a, counts, all)) || a.localeCompare(b));
 
-      if (!roots.length) { projectContainer.innerHTML = '<div class="tag-empty">No projects yet</div>'; return; }
+      if (!roots.length) { projectContainer.innerHTML = '<div class="tag-empty">No folders yet</div>'; return; }
 
       // Reserve the caret column only if some project actually has sub-folders,
       // so leaf rows stay aligned under their siblings.
@@ -697,7 +697,7 @@ import { recordTagOverride, hostMatchesPattern, normalizeTag, prettifyTitle, gen
       if (roots.length > PROJECT_LIMIT) {
         const more = document.createElement('button');
         more.className = 'tag-more';
-        more.textContent = showAllProjects ? 'Show less' : `Show all ${roots.length} projects`;
+        more.textContent = showAllProjects ? 'Show less' : `Show all ${roots.length} folders`;
         more.onclick = () => { showAllProjects = !showAllProjects; renderSidebarProjects(); };
         projectContainer.appendChild(more);
       }
@@ -907,7 +907,7 @@ import { recordTagOverride, hostMatchesPattern, normalizeTag, prettifyTitle, gen
       const favs = [...priorityProjects].filter(p => all.includes(p))
         .sort((a, b) => (rollupCount(b, counts, all) - rollupCount(a, counts, all)) || a.localeCompare(b));
       c.innerHTML = '';
-      if (!favs.length) { c.innerHTML = '<div class="fav-empty">Star a project to pin it here</div>'; return; }
+      if (!favs.length) { c.innerHTML = '<div class="fav-empty">Star a folder to pin it here</div>'; return; }
       favs.forEach(p => c.appendChild(makeProjectRow(p, 0, counts, all)));
     }
 
@@ -1038,7 +1038,7 @@ import { recordTagOverride, hostMatchesPattern, normalizeTag, prettifyTitle, gen
         </div>
 
         <div class="item-meta">
-          <span class="tag tag-project" title="Filter by project" onclick="filterProject('${jsAttr(item.project)}')"><span class="tag-ic"${accent ? ` style="color:${accent}"` : ''}>${projectIconHtml(item.project)}</span>${esc(item.project)}</span>
+          <span class="tag tag-project" title="Filter by folder" onclick="filterProject('${jsAttr(item.project)}')"><span class="tag-ic"${accent ? ` style="color:${accent}"` : ''}>${projectIconHtml(item.project)}</span>${esc(item.project)}</span>
           ${tagsHtml}
           ${suggHtml}
           <button class="tag-add" title="Add tag" onclick="addTagToItem(${item.id})">+</button>
@@ -1385,9 +1385,9 @@ import { recordTagOverride, hostMatchesPattern, normalizeTag, prettifyTitle, gen
         <button class="sf-act${isPri ? ' on' : ''}" data-tip="${isPri ? 'Remove priority' : 'Mark as priority'}" aria-label="${isPri ? 'Remove priority' : 'Mark as priority'}" onclick="togglePriority(event, '${jsAttr(cur)}')">${ICONS.star}</button>
         <button class="sf-act" data-tip="Icon & color" aria-label="Icon & color" onclick="openFolderCustomize(event, '${jsAttr(cur)}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r="2.5"/><circle cx="6.5" cy="12" r="2.5"/><circle cx="16" cy="15" r="2.5"/><circle cx="8" cy="19" r="2"/></svg></button>
         <button class="sf-act" data-tip="New subfolder" aria-label="New subfolder" onclick="addSubfolder(event, '${jsAttr(cur)}')">${ICONS.folderPlus}</button>
-        <button class="sf-act" data-tip="Rename project" aria-label="Rename project" onclick="renameProject(event, '${jsAttr(cur)}')">${ICONS.edit}</button>
+        <button class="sf-act" data-tip="Rename folder" aria-label="Rename folder" onclick="renameProject(event, '${jsAttr(cur)}')">${ICONS.edit}</button>
         <span class="sf-act-sep" aria-hidden="true"></span>
-        <button class="sf-act sf-act-danger" data-tip="Delete project" aria-label="Delete project" onclick="deleteProject(event, '${jsAttr(cur)}')">${ICONS.trash}</button>
+        <button class="sf-act sf-act-danger" data-tip="Delete folder" aria-label="Delete folder" onclick="deleteProject(event, '${jsAttr(cur)}')">${ICONS.trash}</button>
       </div>`;
       html += '</div>';
 
@@ -1882,13 +1882,13 @@ import { recordTagOverride, hostMatchesPattern, normalizeTag, prettifyTitle, gen
         { type: 'cmd', label: 'Show all links', sub: 'Clear every filter', icon: ICONS.folder, run: () => { showAll(); } },
         { type: 'cmd', label: 'Pinned Links', sub: 'Only pinned links', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h6l-1 6 3 3v2h-5v5l-1 1-1-1v-5H4v-2l3-3z"/></svg>', run: () => { pinnedView = false; showPinned(); } },
         { type: 'cmd', label: 'Recently Added', sub: 'Newest links first', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>', run: () => { recentView = false; showRecent(); } },
-        { type: 'cmd', label: 'New project', sub: 'Create a folder', icon: ICONS.folderPlus, run: () => { addNewProject(); } },
+        { type: 'cmd', label: 'New folder', sub: 'Create a folder', icon: ICONS.folderPlus, run: () => { addNewProject(); } },
         { type: 'cmd', label: 'Lines view', sub: 'Compact list', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>', run: () => { setView('lines'); } },
         { type: 'cmd', label: 'Pinterest view', sub: 'Grid masonry', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>', run: () => { setView('pinterest'); } },
         { type: 'cmd', label: 'Toggle dark mode', sub: 'Light / dark workspace', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>', run: () => { toggleTheme(); } },
         { type: 'cmd', label: 'Import / export', sub: 'Bookmarks & backup', icon: ICONS.edit, run: () => { openSettings(); } },
         { type: 'cmd', label: 'Check links', sub: 'Duplicates & broken', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>', run: () => { openHealth(); } },
-        { type: 'cmd', label: 'Auto-organize', sub: 'Bulk file into projects', icon: ICONS.folder, run: () => { openOrganize(); } },
+        { type: 'cmd', label: 'Auto-organize', sub: 'Bulk file into folders', icon: ICONS.folder, run: () => { openOrganize(); } },
         { type: 'cmd', label: 'Keyboard shortcuts', sub: 'View all hotkeys', icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><line x1="6" y1="10" x2="6" y2="10"/><line x1="10" y1="10" x2="10" y2="10"/><line x1="14" y1="10" x2="14" y2="10"/><line x1="18" y1="10" x2="18" y2="10"/><line x1="7" y1="14" x2="17" y2="14"/></svg>', run: () => { openShortcuts(); } },
       ];
     }
@@ -2260,7 +2260,7 @@ import { recordTagOverride, hostMatchesPattern, normalizeTag, prettifyTitle, gen
       const foot = document.getElementById('organizeFoot');
       renderOrganizeList();
       if (organizeResults.length) {
-        status.textContent = `${organizeResults.length} link${organizeResults.length > 1 ? 's' : ''} could move to a better-matching project.`;
+        status.textContent = `${organizeResults.length} link${organizeResults.length > 1 ? 's' : ''} could move to a better-matching folder.`;
         foot.style.display = 'flex';
         const sa = document.getElementById('organizeSelAll'); if (sa) sa.checked = true;
       } else {

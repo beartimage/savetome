@@ -204,16 +204,8 @@ async function oauthCallback(provider, request, env, url) {
 
   let profile;
   if (provider === 'google') {
-    const claims = decodeJwtPayload(tok.id_token);
-    if (!claims || !claims.sub) { console.error('google id_token decode failed'); return redirect('/?auth=error&e=gclaims'); }
-    // The id_token comes straight from Google's token endpoint over TLS, but
-    // validate audience/issuer anyway so a token minted for another client can
-    // never be accepted here.
-    const issOk = claims.iss === 'https://accounts.google.com' || claims.iss === 'accounts.google.com';
-    if (claims.aud !== env.GOOGLE_CLIENT_ID || !issOk) {
-      console.error('google id_token claim mismatch', { aud: claims.aud, iss: claims.iss });
-      return redirect('/?auth=error&e=gclaims');
-    }
+    const claims = await verifyGoogleIdToken(tok.id_token, env);
+    if (!claims || !claims.sub) { console.error('google id_token verify failed'); return redirect('/?auth=error&e=gclaims'); }
     profile = { pid: claims.sub, email: claims.email || '', name: claims.name || claims.email || 'Account', avatar: claims.picture || '' };
   } else {
     const ghHeaders = { Authorization: 'Bearer ' + tok.access_token, 'User-Agent': 'saveto-me-app/1.0', Accept: 'application/vnd.github+json' };
@@ -272,7 +264,42 @@ async function verifyJwt(token, env) {
   if (payload.exp && payload.exp < nowSec()) return null;
   return payload;
 }
-function decodeJwtPayload(jwt) { try { return JSON.parse(dec(b64urlBytes(String(jwt).split('.')[1]))); } catch (e) { return null; } }
+// Full OIDC verification of a Google id_token: RS256 signature against Google's
+// published JWKS, plus issuer / audience / expiry checks. The token is already
+// fetched server-side over TLS, but verifying the signature makes a forged or
+// swapped token impossible even if that transport assumption ever breaks.
+async function verifyGoogleIdToken(idToken, env) {
+  try {
+    const parts = String(idToken || '').split('.');
+    if (parts.length !== 3) return null;
+    const header = JSON.parse(dec(b64urlBytes(parts[0])));
+    if (header.alg !== 'RS256' || !header.kid) return null;
+    const jwk = await googleJwk(header.kid);
+    if (!jwk) return null;
+    const key = await crypto.subtle.importKey('jwk', jwk, { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['verify']);
+    const ok = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', key, b64urlBytes(parts[2]), enc(parts[0] + '.' + parts[1]));
+    if (!ok) return null;
+    const claims = JSON.parse(dec(b64urlBytes(parts[1])));
+    const issOk = claims.iss === 'https://accounts.google.com' || claims.iss === 'accounts.google.com';
+    if (!issOk || claims.aud !== env.GOOGLE_CLIENT_ID) return null;
+    if (!claims.exp || claims.exp < nowSec()) return null;
+    return claims;
+  } catch (e) { console.error('verifyGoogleIdToken error', e && e.message); return null; }
+}
+
+// Fetch (and per-isolate cache) Google's OIDC signing keys, indexed by kid.
+// Refetches on a cache miss so key rotation is handled automatically.
+let _googleJwks = null;
+async function googleJwk(kid) {
+  if (!_googleJwks || !_googleJwks[kid]) {
+    const res = await fetch('https://www.googleapis.com/oauth2/v3/certs');
+    const data = await res.json().catch(() => null);
+    if (!data || !Array.isArray(data.keys)) return null;
+    _googleJwks = {};
+    for (const k of data.keys) _googleJwks[k.kid] = k;
+  }
+  return _googleJwks[kid] || null;
+}
 
 // ---------------------------------------------------------------- utilities
 

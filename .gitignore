@@ -17,3 +17,6 @@ node_modules/
 
 # Vite build output (rebuilt via `npm run build` before deploy)
 dist/
+
+# Archives / large binaries (not part of the app)
+*.zip

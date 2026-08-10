@@ -25,6 +25,11 @@ import { recordTagOverride, hostMatchesPattern, normalizeTag, prettifyTitle, gen
     const RECENT_LIMIT = 50;        // how many newest links "Recently Added" shows
     let recentWindow = 0;           // Recently Added time filter in days (0 = all)
     let projectMeta = {};           // project name -> { icon, emoji, color }
+    // Privacy mode: when on, the app makes NO external requests for link icons or
+    // page previews — favicons render as local letter badges and the Pinterest
+    // view shows a local placeholder. Saved URLs never reach Google/WordPress.
+    let privacyMode = false;
+    try { privacyMode = localStorage.getItem('savemePrivacy') === '1'; } catch (e) {}
     const DAY_MS = 86400000;
 
     // --- Small shared helpers ---------------------------------------------------
@@ -916,6 +921,46 @@ import { recordTagOverride, hostMatchesPattern, normalizeTag, prettifyTitle, gen
     let _rendered = 0;      // how many of _visible are in the DOM
     let _io = null;         // IntersectionObserver for the load-more sentinel
 
+    // Deterministic hue (0-359) from a string — local, no network.
+    function domainHue(s) {
+      const str = String(s || '');
+      let h = 0;
+      for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0;
+      return h % 360;
+    }
+    // Favicon markup. Normally the Google favicon service; in Privacy mode a local
+    // letter badge (colored by a hash of the domain) so no request is made.
+    // opts: { cls (extra class), style (extra inline style, e.g. explicit size) }
+    function faviconHtml(domain, opts = {}) {
+      const d = String(domain || '');
+      const cls = opts.cls || '';
+      const style = opts.style || '';
+      if (privacyMode) {
+        const letter = esc((d.replace(/^www\./, '').charAt(0) || '?').toUpperCase());
+        const cl = ('fav-mono' + (cls ? ' ' + cls : '')).trim();
+        return `<span class="${cl}" style="background:hsl(${domainHue(d)} 55% 45%);${style}">${letter}</span>`;
+      }
+      const classAttr = cls ? ` class="${cls}"` : '';
+      const styleAttr = style ? ` style="${style}"` : '';
+      return `<img${classAttr} src="https://www.google.com/s2/favicons?domain=${encodeURIComponent(d)}&sz=32" alt=""${styleAttr} />`;
+    }
+
+    // Toggle Privacy mode (called from the settings switch). Persists + re-renders.
+    function setPrivacyMode(on) {
+      privacyMode = (on === undefined) ? !privacyMode : !!on;
+      try { localStorage.setItem('savemePrivacy', privacyMode ? '1' : '0'); } catch (e) {}
+      syncPrivacyToggle();
+      refresh();
+    }
+    function syncPrivacyToggle() {
+      const el = document.getElementById('privacyToggle');
+      if (!el) return;
+      el.classList.toggle('on', privacyMode);
+      el.setAttribute('aria-checked', privacyMode ? 'true' : 'false');
+      const lbl = el.querySelector('.switch-label');
+      if (lbl) lbl.textContent = privacyMode ? 'On' : 'Off';
+    }
+
     function buildCard(item) {
       const div = document.createElement('div');
       div.className = 'link-item' + (item.pinned ? ' pinned' : '');
@@ -965,9 +1010,9 @@ import { recordTagOverride, hostMatchesPattern, normalizeTag, prettifyTitle, gen
 
       div.innerHTML = `
         ${item.pinned ? `<span class="pin-flag" title="Pinned">${ICONS.pin || ICONS.star}</span>` : ''}
-        <div class="item-thumb-wrap" data-domain="${esc(item.domain)}">
+        <div class="item-thumb-wrap${privacyMode ? ' thumb-failed' : ''}" data-domain="${esc(item.domain)}">
           <img class="item-thumb" loading="lazy" alt="Preview of ${esc(item.domain)}"
-            data-src="https://s.wordpress.com/mshots/v1/${encodeURIComponent(item.url)}?w=520&h=326"
+            ${privacyMode ? '' : `data-src="https://s.wordpress.com/mshots/v1/${encodeURIComponent(item.url)}?w=520&h=326"`}
             onerror="this.closest('.item-thumb-wrap').classList.add('thumb-failed')" />
           <div class="item-hover-actions">
             <button class="meta-btn pin-btn${item.pinned ? ' on' : ''}" title="${item.pinned ? 'Unpin' : 'Pin to top'}" onclick="event.stopPropagation(); togglePin(${item.id})">${ICONS.pin || ICONS.star}</button>
@@ -975,7 +1020,7 @@ import { recordTagOverride, hostMatchesPattern, normalizeTag, prettifyTitle, gen
         </div>
 
         <div class="item-site">
-          <img class="item-favicon" src="https://www.google.com/s2/favicons?domain=${encodeURIComponent(item.domain || '')}&sz=32" alt="icon" />
+          ${faviconHtml(item.domain, { cls: 'item-favicon' })}
           <a href="${safeUrl(item.url)}" target="_blank" rel="noopener noreferrer" class="item-domain" title="Open link in new tab" onclick="markOpened(${item.id})">${esc(item.domain)}</a>
           ${item.snoozedUntil && item.snoozedUntil > Date.now() ? `<span class="item-age" title="Snoozed">💤</span>` : ''}
         </div>
@@ -1883,7 +1928,7 @@ import { recordTagOverride, hostMatchesPattern, normalizeTag, prettifyTitle, gen
           i.title.toLowerCase().includes(q) || i.domain.toLowerCase().includes(q) || (i.description || '').toLowerCase().includes(q)
         ).slice(0, 8).map(i => ({
           type: 'link', label: i.title, sub: i.domain,
-          icon: `<img src="https://www.google.com/s2/favicons?domain=${encodeURIComponent(i.domain || '')}&sz=32" alt="" style="width:18px;height:18px;border-radius:4px" />`,
+          icon: faviconHtml(i.domain, { style: 'width:18px;height:18px;border-radius:4px' }),
           run: () => { window.open(i.url, '_blank'); }
         }));
         if (links.length) groups.push({ label: 'Links', rows: links });
@@ -1892,7 +1937,7 @@ import { recordTagOverride, hostMatchesPattern, normalizeTag, prettifyTitle, gen
         const recents = items.slice().sort((a, b) => (itemTimestamp(b) || b.id) - (itemTimestamp(a) || a.id))
           .slice(0, 5).map(i => ({
             type: 'link', label: i.title, sub: i.domain,
-            icon: `<img src="https://www.google.com/s2/favicons?domain=${encodeURIComponent(i.domain || '')}&sz=32" alt="" style="width:18px;height:18px;border-radius:4px" />`,
+            icon: faviconHtml(i.domain, { style: 'width:18px;height:18px;border-radius:4px' }),
             run: () => { window.open(i.url, '_blank'); }
           }));
         if (recents.length) groups.push({ label: 'Recent', rows: recents });
@@ -1990,6 +2035,7 @@ import { recordTagOverride, hostMatchesPattern, normalizeTag, prettifyTitle, gen
       document.getElementById('importStatus').textContent = '';
       const bm = document.getElementById('bookmarkletLink');
       if (bm) bm.setAttribute('href', bookmarkletHref());
+      syncPrivacyToggle();
       document.getElementById('settingsOverlay').classList.add('show');
     }
     function closeSettings() {
@@ -2860,14 +2906,14 @@ import { recordTagOverride, hostMatchesPattern, normalizeTag, prettifyTitle, gen
       addNewProject, addSubfolder, addTagToItem, applyOrganize, archiveHealthSelected,
       askCancel, askOk, beginLogin, clearFolderCustomize, clearMainSearch, clearRecentWindow,
       closeFolderCustomize, closeHeaderMenu, closeHealth, closeLogin, closeNav, closeOrganize,
-      closeSettings, closeShortcuts, closeTagsModal, cloudLogout, cmdkHover, cmdkKey, cmdkRun,
+      closeSettings, closeShortcuts, closeTagsModal, closeCmdk, cloudLogout, cmdkHover, cmdkKey, cmdkRun,
       collapseAllFolders, confirmReclassify, confirmSuggested, deleteItem, deleteProject,
       dismissSuggested, expandAllFolders, exportHTML, exportJSON, filterProject, filterTag,
       handleImportFile, handleInput, handleNoteKey, markOpened, navBack, navForward,
-      onTagsSearch, openFolderCustomize, openLogin, pickSort, removeHealthSelected,
+      onTagsSearch, openFolderCustomize, openHealth, openLogin, openSettings, pickSort, removeHealthSelected, removeTag,
       renameProject, renderCmdk, rootDragOver, rootDrop, runHealthCheck, setFolderColor,
-      setFolderIcon, setRecentWindow, setTagMode, setTheme, setView, sfChipDragOver, sfChipDrop,
+      setFolderIcon, setPrivacyMode, setRecentWindow, setTagMode, setTheme, setView, sfChipDragOver, sfChipDrop,
       showAll, showPinned, showRecent, toggleCollapse, toggleHeaderMenu, toggleHealthSelectAll,
-      toggleNav, toggleOrganizeSelectAll, togglePriority, toggleSection, toggleSidebar,
+      toggleNav, toggleOrganizeSelectAll, togglePin, togglePriority, toggleSection, toggleSidebar,
       toggleSortMenu, updateNote, unnestProject, dbPut, refresh
     });

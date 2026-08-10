@@ -25,6 +25,9 @@ shown in compact/detailed and list/grid views. Everything runs client-side.
   not pills); click one to filter. The sidebar shows the top 10; "Show all" opens a
   searchable tags modal.
 - **Themes** — Light, Dark, Green, Red, Black (OLED), and Gold. Picker in the header ⋮ menu; choice persists.
+- **Privacy mode** — a Settings toggle that stops all external favicon/preview requests: favicons
+  become local letter badges and the Pinterest view uses local placeholders, so saved URLs never
+  reach Google or WordPress. Off by default; persists once enabled.
 - **Accounts + cloud sync (optional)** — sign in with Google to sync your
   library across devices. Backed by a Cloudflare Worker + D1; the app still works
   fully local-only with no account. See **SETUP.md**.
@@ -49,8 +52,11 @@ shown in compact/detailed and list/grid views. Everything runs client-side.
   Pinterest view) are fetched from WordPress mShots; and the Plus Jakarta Sans
   webfont is loaded from Google Fonts — all three send the URL/domain (and, for
   the font, your IP) to a third party. Signing in additionally uses Google/GitHub
-  OAuth (opt-in). Apart from these, nothing leaves the browser — the tagger,
-  storage, and search all run on-device.
+  OAuth (opt-in). **Privacy mode** (Settings) turns off the favicon + preview
+  requests entirely — favicons become local letter badges and previews become
+  local placeholders — so nothing about your saved URLs leaves the browser (the
+  one-time webfont still loads at page start; self-host it to remove that too).
+  Apart from these, the tagger, storage, and search all run on-device.
 - No real page-title/description fetch (blocked by CORS client-side); title is
   derived from the URL and the description from the on-device classifier.
 

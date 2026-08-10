@@ -153,8 +153,11 @@ inline-editable notes, drag-and-drop into folders, client-side search.
 4. Privacy: previews send full URL to WordPress mShots; favicons send domain to
    Google; the Plus Jakarta Sans webfont loads from Google Fonts (sends IP). These
    are the only unconditional third-party requests. OAuth (Google/GitHub) is opt-in
-   at sign-in. To make the app fully self-contained, self-host the font (drop the
-   `@import` in `src/styles.css` for local `@font-face` + `woff2` files).
+   at sign-in. **Privacy mode** (settings toggle, persisted as `savemePrivacy`)
+   suppresses the favicon + preview requests — `faviconHtml()` renders a local
+   letter badge and cards use the `.thumb-failed` local placeholder. To make the
+   app fully self-contained, also self-host the font (drop the `@import` in
+   `src/styles.css` for local `@font-face` + `woff2` files).
 5. Beyond ~100k links: move data server-side (Postgres + Meilisearch/Typesense, cursor pagination, per-user sharding).
 
 ## Testing checklist (after edits)

@@ -228,6 +228,20 @@
       <p class="settings-sub">Manage your bookmarks and quick-capture tools.</p>
 
       <div class="settings-card">
+        <div class="settings-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <div class="settings-card-body">
+          <div class="settings-card-title">Privacy mode</div>
+          <p class="settings-card-desc">saveto.me runs on your device. With Privacy mode <b>on</b>, it makes <b>no external requests</b> for link icons or page previews: favicons become local letter badges and the Pinterest view shows a local placeholder instead of a website screenshot. Your saved URLs are never sent to Google or WordPress.</p>
+          <div class="settings-card-actions">
+            <button class="switch" id="privacyToggle" role="switch" aria-checked="false" onclick="setPrivacyMode()">
+              <span class="switch-track"><span class="switch-thumb"></span></span>
+              <span class="switch-label">Off</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-card">
         <div class="settings-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m8 11 4 4 4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg></div>
         <div class="settings-card-body">
           <div class="settings-card-title">Import bookmarks</div>

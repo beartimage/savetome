@@ -7,7 +7,7 @@ local (IndexedDB) mode until the Worker below is deployed and you sign in.
 Architecture:
 
 ```
-Browser (public/index.html)
+Browser (index.html + src/, built to dist/)
    |  /api/*                         everything else -> static assets
    v
 Cloudflare Worker (worker.js)
@@ -94,12 +94,13 @@ wrangler secret put SESSION_SECRET        # any long random string, e.g. `openss
 ## 4. Deploy
 
 ```bash
-wrangler deploy
+npm run build && wrangler deploy
 ```
 
 > Note: this switches deployment from "upload static assets" to a Wrangler
-> Worker deploy. After the first `wrangler deploy`, the Worker serves both the
-> app (from `public/`) and the `/api/*` backend.
+> Worker deploy. Always `npm run build` first — wrangler serves the built
+> `dist/`. After the first deploy, the Worker serves both the app (from
+> `dist/`) and the `/api/*` backend.
 
 ## 5. Verify
 
@@ -128,6 +129,9 @@ SESSION_SECRET=dev-secret
 ## Notes
 
 - Sessions are stateless signed JWTs in an HttpOnly, Secure, SameSite=Lax cookie (30 days).
-- User data is stored as one JSON blob per user (matches the app's in-memory model). Simple and fast for a personal library; revisit per-row storage only past ~100k links.
-- Opening `public/index.html` directly (file://) or hosting it as pure static
-  files (no Worker) keeps the app fully functional in local-only mode.
+- User data is stored **per bookmark** — one D1 `items` row each (`updated_at` +
+  deletion tombstones), merged per row, plus a small versioned `settings` blob.
+  This is the delta-sync model that avoids one device clobbering another; it scales
+  to ~100k links. (The legacy single-blob `state` table is auto-migrated on first sync.)
+- Opening the built `dist/index.html` directly (file://) or hosting `dist/` as pure
+  static files (no Worker) keeps the app fully functional in local-only mode.

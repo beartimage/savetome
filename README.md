@@ -52,24 +52,30 @@ shown in compact/detailed and list/grid views. Everything runs client-side.
   derived from the URL and the description from the on-device classifier.
 
 ## Run
-Open `public/index.html` in a browser, or serve the folder:
+Install deps then start the Vite dev server:
 ```
-cd ~/Desktop/saveto.me/public && python3 -m http.server 8080
+cd ~/Desktop/saveto.me && npm install && npm run dev
 ```
+Production build lands in `dist/`: `npm run build`.
 
 ## Deploy
-Deployed as a **Cloudflare Worker** (`wrangler deploy`) — serves the SPA from `public/`
-and the `/api/*` accounts/sync backend from `worker.js`. One-time setup (OAuth apps, D1,
-secrets) is in **SETUP.md**. Without the backend it is still a plain static site
-(any static host / GitHub Pages) in local-only mode.
+Deployed as a **Cloudflare Worker**. Build first, then deploy — wrangler serves the
+built `dist/`:
+```
+npm run build && npx wrangler deploy   # or: npm run deploy
+```
+The Worker (`worker.js`) serves the SPA from `dist/` and the `/api/*` accounts/sync
+backend. One-time setup (OAuth apps, D1, secrets) is in **SETUP.md**. Without the
+backend it is still a plain static site (any static host / GitHub Pages) in local-only mode.
 
 ## Project rules
 - Lives **only** at `~/Desktop/saveto.me/` with its own git remote (`beartimage/savetome`).
 - **Never** published to QNR Tools Hub or the script launcher.
 
 ## Stack
-- SPA in a single `public/index.html` (HTML/CSS/JS); Plus Jakarta Sans throughout.
-  Optional Cloudflare Worker (`worker.js`) + D1 for accounts/sync. **Two-tone dashboard
+- SPA split into `index.html` (markup) + `src/app.js` (all JS, ES module) + `src/styles.css`,
+  bundled by **Vite** into `dist/`; Plus Jakarta Sans throughout. Optional Cloudflare Worker
+  (`worker.js`) + D1 for accounts/sync. **Two-tone dashboard
   theme** (SwiftHub reference) — dark navy sidebar with purple accent, orange count
   badges, and feather-style line icons on every row; light lavender-gray content area
   with white cards, purple `#6C5CE7` accents, and soft shadows. Six selectable themes.

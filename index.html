@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>saveto.me — Smart Bookmark Manager</title>
+  <meta name="theme-color" content="#171A2E">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23A78BFA%22%2F%3E%3Cstop%20offset%3D%22.5%22%20stop-color%3D%22%237C5CFB%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%235B4BE0%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%229%22%20fill%3D%22url(%23g)%22%2F%3E%3Cpath%20d%3D%22M11%205.5h10a2.5%202.5%200%200%201%202.5%202.5v18.1c0%201.28-1.42%202.04-2.48%201.33L16%2024l-5.02%203.43C9.92%2028.15%208.5%2027.39%208.5%2026.1V8A2.5%202.5%200%200%201%2011%205.5z%22%20fill%3D%22%23ffffff%22%2F%3E%3Cpath%20d%3D%22M16%2010v6m0%200l-3-3m3%203l3-3%22%20fill%3D%22none%22%20stroke%3D%22%235B4BE0%22%20stroke-width%3D%222.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E">
+
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <aside>
+    <div class="sidebar-resize" id="sidebarResize" title="Drag to resize"></div>
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 32 32" fill="none"><path d="M11 5.5h10a2.5 2.5 0 0 1 2.5 2.5v18.1c0 1.28-1.42 2.04-2.48 1.33L16 24l-5.02 3.43C9.92 28.15 8.5 27.39 8.5 26.1V8A2.5 2.5 0 0 1 11 5.5z" fill="#fff"/><path d="M16 10v6m0 0l-3-3m3 3l3-3" stroke="#5B4BE0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="brand-text">
+        <span class="brand-name">saveto.me</span>
+        <span class="brand-sub">private</span>
+      </div>
+      <button class="brand-chev" id="sidebarToggle" onclick="toggleSidebar()" title="Collapse sidebar" aria-label="Collapse sidebar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+      </button>
+    </div>
+
+    <div class="nav-scroll">
+      <div class="nav-section acc" data-acc="library">
+        <div class="section-header acc-header" onclick="toggleSection('library')">
+          <span class="acc-caret"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>
+          <span class="section-title">Library</span>
+        </div>
+        <div class="nav-section-body">
+          <div class="nav-item active" id="nav-all" onclick="showAll()"
+               ondragover="rootDragOver(event,this)"
+               ondragleave="this.classList.remove('drag-over');"
+               ondrop="rootDrop(event,this)">
+            <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></span>
+            <span class="nav-label">All Links</span>
+            <span class="badge" id="count-all">0</span>
+          </div>
+          <div class="nav-item" id="nav-pinned" onclick="showPinned()">
+            <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h6l-1 6 3 3v2h-5v5l-1 1-1-1v-5H4v-2l3-3z"/></svg></span>
+            <span class="nav-label">Pinned Links</span>
+            <span class="badge" id="count-pinned">0</span>
+          </div>
+          <div class="nav-item" id="nav-recent" onclick="showRecent()">
+            <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
+            <span class="nav-label">Recently Added</span>
+            <span class="badge" id="count-recent">0</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-section acc" data-acc="favourites">
+        <div class="section-header acc-header" onclick="toggleSection('favourites')">
+          <span class="acc-caret"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>
+          <span class="section-title">Favorites</span>
+        </div>
+        <div class="nav-section-body">
+          <div id="favourite-list"></div>
+        </div>
+      </div>
+
+      <div class="nav-section acc" data-acc="projects">
+        <div class="section-header acc-header" onclick="toggleSection('projects')">
+          <span class="acc-caret"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>
+          <span class="section-title">Projects</span>
+        </div>
+        <div class="nav-section-body">
+          <div id="project-list"></div>
+        </div>
+      </div>
+
+      <div class="nav-section acc" data-acc="tags">
+        <div class="section-header acc-header" onclick="toggleSection('tags')">
+          <span class="acc-caret"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>
+          <span class="section-title">Tags</span>
+        </div>
+        <div class="nav-section-body">
+          <div id="tag-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="nav-item" onclick="addNewProject()">
+        <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></span>
+        <span class="nav-label">Add project</span>
+      </div>
+      <div class="profile-row">
+        <div class="profile-av">Me</div>
+        <div class="profile-text">
+          <span class="profile-name">Local library</span>
+          <span class="profile-sub">saved on this device</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Mobile drawer backdrop -->
+  <div class="nav-backdrop" id="navBackdrop" onclick="closeNav()"></div>
+
+  <!-- Main Workspace -->
+  <main>
+    <header>
+      <button class="nav-toggle" id="navToggle" onclick="toggleNav()" title="Menu" aria-label="Open menu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+      <div class="nav-hist">
+        <button class="nav-hist-btn" id="btnNavBack" onclick="navBack()" title="Back" aria-label="Back" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
+        <button class="nav-hist-btn" id="btnNavFwd" onclick="navForward()" title="Forward" aria-label="Forward" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </button>
+      </div>
+      <div class="search-bar" id="searchBar">
+        <svg class="search-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input
+          type="text"
+          id="searchInput"
+          class="search-input"
+          placeholder="Paste a URL to save, or search links & folders…"
+          onkeydown="handleInput(event)"
+        />
+        <button class="search-clear" id="searchClear" onclick="clearMainSearch()" title="Clear" aria-label="Clear">×</button>
+      </div>
+
+      <div class="controls-group">
+        <!-- Sort (icon-only, opens a menu) -->
+        <div class="header-menu" id="sortMenu">
+          <button class="settings-btn" id="btnSort" onclick="toggleSortMenu(event)" title="Sort links" aria-haspopup="true" aria-expanded="false" aria-label="Sort links">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h13M4 12h9M4 18h5"/><path d="m17 15 3 3 3-3M20 18V8"/></svg>
+          </button>
+          <div class="header-menu-dropdown" id="sortMenuDropdown" role="menu">
+            <button class="hmenu-item" role="menuitemradio" data-sort="newest" onclick="pickSort('newest')"><span class="sort-check"></span>Newest</button>
+            <button class="hmenu-item" role="menuitemradio" data-sort="oldest" onclick="pickSort('oldest')"><span class="sort-check"></span>Oldest</button>
+            <button class="hmenu-item" role="menuitemradio" data-sort="title" onclick="pickSort('title')"><span class="sort-check"></span>Title A–Z</button>
+            <button class="hmenu-item" role="menuitemradio" data-sort="domain" onclick="pickSort('domain')"><span class="sort-check"></span>Domain</button>
+            <button class="hmenu-item" role="menuitemradio" data-sort="custom" onclick="pickSort('custom')"><span class="sort-check"></span>My order</button>
+          </div>
+        </div>
+
+        <!-- View Switcher: Lines (list + compact) / Pinterest (grid + detailed) -->
+        <div class="view-switcher">
+          <button class="view-btn-icon active" id="btnLines" onclick="setView('lines')" title="Compact list view">
+            <svg viewBox="0 0 16 16"><path d="M2 3.5a.5.5 0 01.5-.5h11a.5.5 0 010 1h-11a.5.5 0 01-.5-.5zm0 4.5a.5.5 0 01.5-.5h11a.5.5 0 010 1h-11a.5.5 0 01-.5-.5zm0 4.5a.5.5 0 01.5-.5h11a.5.5 0 010 1h-11a.5.5 0 01-.5-.5z"/></svg>
+          </button>
+          <button class="view-btn-icon" id="btnPinterest" onclick="setView('pinterest')" title="Pinterest grid view">
+            <svg viewBox="0 0 16 16"><path d="M1 2.5A1.5 1.5 0 012.5 1h3A1.5 1.5 0 017 2.5v3A1.5 1.5 0 015.5 7h-3A1.5 1.5 0 011 5.5v-3zm8 0A1.5 1.5 0 0110.5 1h3A1.5 1.5 0 0115 2.5v3A1.5 1.5 0 0113.5 7h-3A1.5 1.5 0 019 5.5v-3zm-8 8A1.5 1.5 0 012.5 9h3A1.5 1.5 0 017 10.5v3A1.5 1.5 0 015.5 15h-3A1.5 1.5 0 011 13.5v-3zm8 0A1.5 1.5 0 0110.5 9h3a1.5 1.5 0 011.5 1.5v3a1.5 1.5 0 01-1.5 1.5h-3A1.5 1.5 0 019 13.5v-3z"/></svg>
+          </button>
+        </div>
+
+        <!-- Overflow menu: Health Checker / All Settings / Theme Switcher -->
+        <div class="header-menu" id="headerMenu">
+          <button class="settings-btn" id="btnMenu" onclick="toggleHeaderMenu(event)" title="Menu" aria-haspopup="true" aria-expanded="false">
+            <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
+          </button>
+          <div class="header-menu-dropdown" id="headerMenuDropdown" role="menu">
+            <button class="hmenu-item" role="menuitem" onclick="closeHeaderMenu(); openHealth();">
+              <span class="hmenu-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg></span>
+              Health Checker
+            </button>
+            <button class="hmenu-item" role="menuitem" onclick="closeHeaderMenu(); openSettings();">
+              <span class="hmenu-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
+              All Settings
+            </button>
+            <div class="hmenu-sep"></div>
+            <div class="hmenu-label">Theme</div>
+            <div class="hmenu-themes" id="themeSwatches" role="group" aria-label="Theme">
+              <button class="theme-swatch sw-light" data-theme="light" onclick="setTheme('light')" title="Light" aria-label="Light theme"></button>
+              <button class="theme-swatch sw-dark"  data-theme="dark"  onclick="setTheme('dark')"  title="Dark"  aria-label="Dark theme"></button>
+              <button class="theme-swatch sw-green" data-theme="green" onclick="setTheme('green')" title="Green" aria-label="Green theme"></button>
+              <button class="theme-swatch sw-red"   data-theme="red"   onclick="setTheme('red')"   title="Red"   aria-label="Red theme"></button>
+              <button class="theme-swatch sw-black" data-theme="black" onclick="setTheme('black')" title="Black" aria-label="Black theme"></button>
+              <button class="theme-swatch sw-gold"  data-theme="gold"  onclick="setTheme('gold')"  title="Gold"  aria-label="Gold theme"></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="content-scroll">
+      <div id="subfolderBar" class="subfolder-bar" style="display:none"></div>
+      <div class="view-list mode-compact" id="linkList"></div>
+    </div>
+  </main>
+
+  <!-- Command palette (Cmd/Ctrl + K) -->
+  <div class="cmdk-overlay" id="cmdkOverlay" onclick="if(event.target===this)closeCmdk()">
+    <div class="cmdk" role="dialog" aria-label="Command palette">
+      <div class="cmdk-search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input id="cmdkInput" type="text" placeholder="Search folders, tags, links, or run a command…" oninput="renderCmdk(this.value)" onkeydown="cmdkKey(event)" autocomplete="off" />
+        <span class="cmdk-kbd">esc</span>
+      </div>
+      <div class="cmdk-list" id="cmdkList"></div>
+    </div>
+  </div>
+
+  <!-- Settings / import-export modal -->
+  <div class="modal-overlay" id="loginOverlay" onclick="if(event.target===this)closeLogin()">
+    <div class="modal login-modal" role="dialog" aria-label="Sign in">
+      <div class="modal-head">
+        <h2 class="modal-title">Sign in to saveto.me</h2>
+        <button class="modal-close" onclick="closeLogin()" title="Close">×</button>
+      </div>
+      <p class="login-sub">Sync your bookmarks across every device. Your library stays private to your account.</p>
+      <div class="login-providers">
+        <button class="login-btn" onclick="beginLogin('google')">
+          <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23z"/><path fill="#FBBC05" d="M5.84 14.1a6.6 6.6 0 0 1 0-4.2V7.06H2.18a11 11 0 0 0 0 9.88l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1A11 11 0 0 0 2.18 7.06l3.66 2.84C6.71 7.3 9.14 5.38 12 5.38z"/></svg>
+          Continue with Google
+        </button>
+      </div>
+      <p class="login-note">You can keep using saveto.me without an account — your data stays only in this browser until you sign in.</p>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="settingsOverlay" onclick="if(event.target===this)closeSettings()">
+    <div class="modal settings-modal" role="dialog" aria-label="Settings">
+      <div class="modal-head">
+        <h2 class="modal-title">Settings</h2>
+        <button class="modal-close" onclick="closeSettings()" title="Close">×</button>
+      </div>
+      <p class="settings-sub">Manage your bookmarks and quick-capture tools.</p>
+
+      <div class="settings-card">
+        <div class="settings-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m8 11 4 4 4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg></div>
+        <div class="settings-card-body">
+          <div class="settings-card-title">Import bookmarks</div>
+          <p class="settings-card-desc">Import a bookmarks file exported from Chrome, Firefox, Safari, or Edge (an <b>.html</b> file), or a saveto.me <b>.json</b> backup. Folders become projects; duplicates are skipped.</p>
+          <div class="settings-card-actions">
+            <label class="modal-btn primary" for="importFile">Choose file to import…</label>
+            <input id="importFile" type="file" accept=".html,.htm,.json,text/html,application/json" style="display:none" onchange="handleImportFile(event)" />
+          </div>
+          <div class="modal-status" id="importStatus"></div>
+        </div>
+      </div>
+
+      <div class="settings-card">
+        <div class="settings-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V9"/><path d="m8 13 4-4 4 4"/><path d="M4 7V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2"/></svg></div>
+        <div class="settings-card-body">
+          <div class="settings-card-title">Export bookmarks</div>
+          <p class="settings-card-desc">Download all your links. Use <b>HTML</b> to import into any browser, or <b>JSON</b> for a full saveto.me backup.</p>
+          <div class="settings-card-actions">
+            <button class="modal-btn" onclick="exportHTML()">Export as HTML</button>
+            <button class="modal-btn" onclick="exportJSON()">Export as JSON</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-card">
+        <div class="settings-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg></div>
+        <div class="settings-card-body">
+          <div class="settings-card-title">Re-classify links</div>
+          <p class="settings-card-desc">Re-run the on-device tagger over every saved link with the latest rules. Refreshes tags and descriptions, and re-files links stuck in an auto-created folder that no longer fits. Your notes, pinned items, and manually-created folders are left untouched.</p>
+          <div class="settings-card-actions">
+            <button class="modal-btn" onclick="confirmReclassify()">Re-classify all links</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-card">
+        <div class="settings-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12a1 1 0 0 1 1 1v16l-7-4-7 4V4a1 1 0 0 1 1-1z"/></svg></div>
+        <div class="settings-card-body">
+          <div class="settings-card-title">Quick-capture bookmarklet</div>
+          <p class="settings-card-desc">Drag this button to your browser's bookmarks bar. Click it on any page to save that page to saveto.me in one tap — no extension needed.</p>
+          <div class="settings-card-actions">
+            <a class="modal-btn primary bookmarklet-btn" id="bookmarkletLink" draggable="true">＋ Save to saveto.me</a>
+          </div>
+          <p class="settings-card-desc" style="margin:8px 0 0;font-size:12px;opacity:.8">Can't drag? Right-click your bookmarks bar → Add page, and paste the link's address.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- All tags modal (searchable) -->
+  <div class="modal-overlay" id="tagsOverlay" onclick="if(event.target===this)closeTagsModal()">
+    <div class="modal" role="dialog" aria-label="All tags">
+      <div class="modal-head">
+        <h2 class="modal-title">All tags</h2>
+        <button class="modal-close" onclick="closeTagsModal()" title="Close">×</button>
+      </div>
+      <input id="tagsSearch" class="tags-search" type="text" placeholder="Search tags…" oninput="onTagsSearch(this.value)" />
+      <div id="tagsModalList" class="tags-modal-list"></div>
+    </div>
+  </div>
+
+  <!-- Customize folder (icon + color) -->
+  <div class="modal-overlay" id="folderCustomOverlay" onclick="if(event.target===this)closeFolderCustomize()">
+    <div class="modal" role="dialog" aria-label="Customize folder" style="max-width:420px">
+      <div class="modal-head">
+        <h2 class="modal-title">Customize folder</h2>
+        <button class="modal-close" onclick="closeFolderCustomize()" title="Close">×</button>
+      </div>
+      <p class="modal-hint" id="fcName" style="margin-top:4px"></p>
+      <div class="modal-section-title" style="margin-top:8px">Icon</div>
+      <div id="fcEmoji" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"></div>
+      <div class="modal-section-title" style="margin-top:18px">Color accent</div>
+      <div id="fcColor" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"></div>
+      <div class="ask-actions" style="margin-top:22px">
+        <button class="modal-btn" onclick="clearFolderCustomize()">Reset</button>
+        <button class="modal-btn primary" onclick="closeFolderCustomize()">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick-look preview removed -->
+
+  <!-- Keyboard shortcuts cheat sheet -->
+  <div class="modal-overlay" id="shortcutsOverlay" onclick="if(event.target===this)closeShortcuts()">
+    <div class="modal" role="dialog" aria-label="Keyboard shortcuts" style="max-width:420px">
+      <div class="modal-head">
+        <h2 class="modal-title">Keyboard shortcuts</h2>
+        <button class="modal-close" onclick="closeShortcuts()" title="Close">×</button>
+      </div>
+      <div class="kbd-row"><span class="kbd-label">Focus save / search</span><span class="kbd-keys"><span class="kbd">N</span></span></div>
+      <div class="kbd-row"><span class="kbd-label">Search</span><span class="kbd-keys"><span class="kbd">/</span></span></div>
+      <div class="kbd-row"><span class="kbd-label">Command palette</span><span class="kbd-keys"><span class="kbd">⌘</span><span class="kbd">K</span></span></div>
+      <div class="kbd-row"><span class="kbd-label">Lines view</span><span class="kbd-keys"><span class="kbd">1</span></span></div>
+      <div class="kbd-row"><span class="kbd-label">Pinterest view</span><span class="kbd-keys"><span class="kbd">2</span></span></div>
+      <div class="kbd-row"><span class="kbd-label">This cheat sheet</span><span class="kbd-keys"><span class="kbd">?</span></span></div>
+      <div class="kbd-row"><span class="kbd-label">Close / clear filters</span><span class="kbd-keys"><span class="kbd">Esc</span></span></div>
+    </div>
+  </div>
+
+  <!-- Link health modal (duplicates / broken / invalid) -->
+  <div class="modal-overlay" id="healthOverlay" onclick="if(event.target===this)closeHealth()">
+    <div class="modal" role="dialog" aria-label="Check links">
+      <div class="modal-head">
+        <h2 class="modal-title">Check links</h2>
+        <button class="modal-close" onclick="closeHealth()" title="Close">×</button>
+      </div>
+      <p class="modal-hint">Finds <b>duplicate</b> and <b>invalid</b> URLs instantly. A <b>reachability</b> check is best-effort: browsers block reading cross-site responses (CORS), so only clear failures (bad domain, timeout) are flagged — a link marked "unreachable" may still open fine.</p>
+      <div class="health-actions">
+        <button class="modal-btn" id="healthScanBtn" onclick="runHealthCheck()">Scan all links</button>
+        <label class="health-reach"><input type="checkbox" id="healthReach" /> also test reachability (slower)</label>
+      </div>
+      <div class="modal-status" id="healthStatus"></div>
+      <div id="healthList" class="health-list"></div>
+      <div class="health-foot" id="healthFoot" style="display:none">
+        <label class="health-reach"><input type="checkbox" id="healthSelAll" onchange="toggleHealthSelectAll(this.checked)" /> select all</label>
+        <button class="health-remove-btn" id="healthRemoveBtn" onclick="removeHealthSelected()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          Remove selected
+        </button>
+        <button class="health-archive-btn" id="healthArchiveBtn" onclick="archiveHealthSelected()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8M10 12h4"/></svg>
+          Archive selected
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Organize modal (bulk auto-file into projects) -->
+  <div class="modal-overlay" id="organizeOverlay" onclick="if(event.target===this)closeOrganize()">
+    <div class="modal" role="dialog" aria-label="Organize links">
+      <div class="modal-head">
+        <h2 class="modal-title">Auto-organize</h2>
+        <button class="modal-close" onclick="closeOrganize()" title="Close">×</button>
+      </div>
+      <p class="modal-hint">Suggests a better project for links currently in <b>auto-created</b> folders, based on each link's strongest tag or site. Your manually-created (starred) projects are never touched. Uncheck any you want to leave alone.</p>
+      <div class="modal-status" id="organizeStatus"></div>
+      <div id="organizeList" class="health-list"></div>
+      <div class="health-foot" id="organizeFoot" style="display:none">
+        <label class="health-reach"><input type="checkbox" id="organizeSelAll" checked onchange="toggleOrganizeSelectAll(this.checked)" /> select all</label>
+        <button class="modal-btn primary" id="organizeApplyBtn" onclick="applyOrganize()">Move selected</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="askOverlay" onclick="if(event.target===this)askCancel()">
+    <div class="modal ask-modal" role="dialog" aria-modal="true">
+      <div class="ask-icon" id="askIcon"></div>
+      <h2 class="ask-title" id="askTitle">Title</h2>
+      <p class="ask-msg" id="askMsg"></p>
+      <input id="askInput" class="ask-input" type="text" onkeydown="if(event.key==='Enter')askOk();" />
+      <div class="ask-actions">
+        <button class="modal-btn" id="askCancelBtn" onclick="askCancel()">Cancel</button>
+        <button class="modal-btn primary" id="askOkBtn" onclick="askOk()">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/app.js"></script>
+</body>
+</html>

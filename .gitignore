@@ -14,3 +14,6 @@ tmp/
 .wrangler/
 .dev.vars
 node_modules/
+
+# Vite build output (rebuilt via `npm run build` before deploy)
+dist/

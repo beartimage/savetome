@@ -15,19 +15,37 @@ inline-editable notes, drag-and-drop into folders, client-side search.
 ## Structure
 ```
 ~/Desktop/saveto.me/
-├── public/index.html   # entire SPA (HTML + CSS + JS in one file)
-├── worker.js           # Cloudflare Worker: OAuth + /api/sync delta sync + asset fallthrough
-├── wrangler.toml       # Worker config (assets dir=public, D1 binding, client-id vars)
-├── schema.sql          # D1 tables (users, items, settings; legacy state kept for migration)
-├── SETUP.md            # one-time backend setup (OAuth apps, D1, secrets, deploy)
+├── index.html         # SPA markup + <head> (module-loads src/app.js)
+├── src/
+│   ├── app.js         # all app JS (ES module); ends with a window bridge for inline on* handlers
+│   └── styles.css     # all CSS (imported by app.js)
+├── dist/              # Vite build output (git-ignored) — what wrangler serves
+├── vite.config.js     # build config (root=., outDir=dist)
+├── package.json       # scripts: dev / build / deploy; devDeps vite + wrangler
+├── worker.js          # Cloudflare Worker: OAuth + /api/sync delta sync + asset fallthrough
+├── wrangler.toml      # Worker config (assets dir=dist, D1 binding, client-id vars)
+├── schema.sql         # D1 tables (users, items, settings; legacy state kept for migration)
+├── SETUP.md           # one-time backend setup (OAuth apps, D1, secrets, deploy)
 ├── README.md
-├── CLAUDE.md           # this file
+├── CLAUDE.md          # this file
 └── .gitignore
 ```
 
+## Build & run
+- **Dev**: `npm run dev` (Vite dev server with HMR). **Build**: `npm run build` → `dist/`.
+- **Deploy**: `npm run build && npx wrangler deploy` (or `npm run deploy`). Always build first —
+  wrangler serves `dist/`, not the source. `dist/` is git-ignored.
+- The old single-file `public/index.html` monolith was split (Vite refactor): markup →
+  `index.html`, JS → `src/app.js`, CSS → `src/styles.css`. Because `app.js` is an ES module
+  with its own scope, inline `on*` handlers (in markup **and** JS-generated template strings)
+  only work via the `Object.assign(window, {...})` **bridge at the end of `src/app.js`** —
+  keep it in sync when adding/removing inline handlers. Drag/drop handlers that need live
+  state (`rootDragOver/rootDrop/sfChipDragOver/sfChipDrop`) were extracted from inline
+  expressions into module functions for the same reason.
+
 ## Accounts + cloud sync (optional backend)
 - **Deployed as a Cloudflare Worker** (`worker.js`) that handles `/api/*` and falls
-  through to the static assets in `public/` for everything else.
+  through to the static assets in `dist/` (Vite build output) for everything else.
 - **Auth**: OAuth (**Google only** — GitHub login button removed from the UI; the
   worker's `/api/auth/github/*` routes still exist but are unreachable). Login flow:
   `/api/auth/google/login` →
@@ -112,7 +130,7 @@ inline-editable notes, drag-and-drop into folders, client-side search.
   `importJSON` both funnel into `ingestLinks()` — dedupe by `normalizeUrl`, fill missing metadata via
   `generateLinkMetadata`, create any new projects, `dbPutMany`, refresh.
 
-## Key JS (in index.html)
+## Key JS (in src/app.js)
 - State: `items[]`, `customProjects[]`, `activeFilter`, `currentLayout`,
   `currentDetailMode`, `draggedItemId`.
 - `handleInput` — Enter on a `http(s)://` value creates an item.

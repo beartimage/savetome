@@ -4,9 +4,10 @@ main = "worker.js"
 compatibility_date = "2024-11-01"
 
 # Static SPA assets. The Worker (worker.js) handles /api/*; everything else
-# is served from here via the ASSETS binding.
+# is served from here via the ASSETS binding. Built by Vite (`npm run build`)
+# from index.html + src/ into ./dist. Run the build before `wrangler deploy`.
 [assets]
-directory = "./public"
+directory = "./dist"
 binding = "ASSETS"
 not_found_handling = "single-page-application"
 

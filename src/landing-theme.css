@@ -25,6 +25,18 @@ body.landing-active:not(.app-active) #landingPage {
   background: #212121;
 }
 
+/* Width is protected at the content level so the landing never forces a
+   horizontal scrollbar on small screens, without ever clipping content
+   off-screen (no overflow:hidden/clip on the page container). */
+body.landing-active #landingPage .sl-theme :is(.wrap, .nav, .hero, .card, .sec, .footer, .foot-cols, .socials, .landing-auth-error) {
+  min-width: 0;
+  max-width: 100%;
+}
+body.landing-active #landingPage .sl-theme :is(img, picture, svg, video) { max-width: 100%; }
+body.landing-active #landingPage .sl-theme :is(.hero .lede, .sec-head p, .card p, .landing-auth-error p) {
+  overflow-wrap: anywhere;
+}
+
 body.landing-active #landingPage .sl-theme {
   --bg: #212121;
   --bg-2: #262626;
@@ -572,4 +584,6 @@ body.landing-active #landingPage .sl-theme .nav .btn-primary { min-height: 32px;
   body.landing-active #landingPage .sl-theme .brand { gap: 5px; font-size: 13px; }
   body.landing-active #landingPage .sl-theme .brand .mark { width: 23px; height: 23px; flex-basis: 23px; }
   body.landing-active #landingPage .sl-theme .nav .btn-primary { min-height: 38px; padding: 6px 10px; font-size: 11.5px; }
+  body.landing-active #landingPage .sl-theme .socials { grid-template-columns: repeat(4, minmax(44px, 1fr)); }
+  body.landing-active #landingPage .sl-theme .socials a { min-height: 46px; }
 }

@@ -1803,7 +1803,7 @@ import { conceptAliasesForToken, normalizeSearchConcept } from './search-concept
       };
 
       const tagsHtml = (item.autoTags || []).map(tag =>
-        `<span class="tag ${getTagColorClass(tag)}" title="Filter by #${htmlAttr(tag)}" onclick="filterTag('${jsAttr(tag)}')">#${esc(tag)}<button type="button" class="tag-x" title="Remove tag" onclick="event.stopPropagation(); removeTag('${jsAttr(String(item.id))}', '${jsAttr(tag)}')">×</button></span>`
+        `<span class="tag ${getTagColorClass(tag)}" role="button" tabindex="0" aria-label="Filter by tag ${htmlAttr(tag)}" title="Filter by #${htmlAttr(tag)}" onclick="filterTag('${jsAttr(tag)}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();filterTag('${jsAttr(tag)}')}">#${esc(tag)}<button type="button" class="tag-x" title="Remove tag" onclick="event.stopPropagation(); removeTag('${jsAttr(String(item.id))}', '${jsAttr(tag)}')">×</button></span>`
       ).join('');
 
       const suggHtml = (item.suggestedTags || []).map(tag =>
@@ -2844,6 +2844,16 @@ import { conceptAliasesForToken, normalizeSearchConcept } from './search-concept
       setTimeout(() => submitLibraryAsk(), 80);
     }
 
+    // Coalesce the library-wide local re-render so a fast typist does not run
+    // scoreSearchItem across the whole collection on every keystroke (which
+    // blocks the main thread / spikes INP on large libraries). State is still
+    // updated synchronously; only the expensive render is batched.
+    let _searchRefreshTimer = null;
+    function scheduleSearchRefresh() {
+      if (_searchRefreshTimer) return;
+      _searchRefreshTimer = setTimeout(() => { _searchRefreshTimer = null; refresh(); }, 90);
+    }
+
     document.getElementById('searchInput').addEventListener('input', (e) => {
       const raw = e.target.value.trim();
       updateSmartSearchActions(raw);
@@ -2862,7 +2872,7 @@ import { conceptAliasesForToken, normalizeSearchConcept } from './search-concept
       // Header search is library-wide. Keep the folder tree stable and visible;
       // finding a link must never make its navigation disappear.
       projectQuery = '';
-      refresh();
+      scheduleSearchRefresh();
       scheduleLibrarySearch(raw);
       clearTimeout(_searchNavTimer);
       _searchNavTimer = setTimeout(recordNav, 600);
@@ -4060,7 +4070,7 @@ import { conceptAliasesForToken, normalizeSearchConcept } from './search-concept
         const row = document.createElement('label');
         row.className = 'health-row';
         row.innerHTML = `
-          <input type="checkbox" class="organize-cb" data-id="${r.id}" checked />
+          <input type="checkbox" class="organize-cb" data-id="${htmlAttr(r.id)}" checked />
           <span class="health-info">
             <span class="health-title">${htmlAttr(r.title)}</span>
             <span class="organize-move"><span class="organize-from">${htmlAttr(r.from)}</span><span class="organize-arrow">→</span><span class="organize-to">${htmlAttr(r.to)}</span></span>
@@ -4955,7 +4965,13 @@ import { conceptAliasesForToken, normalizeSearchConcept } from './search-concept
 
     async function initStore() {
       try { _db = await openDB(); }
-      catch (e) { console.warn('IndexedDB unavailable — running in-memory only', e); refresh(); recordNav(); return; }
+      catch (e) {
+        console.warn('IndexedDB unavailable — running in-memory only', e);
+        // Surface the data-loss risk instead of failing silently: without IDB
+        // (private browsing / disabled storage) nothing persists across reloads.
+        setTimeout(() => showToast('Storage is unavailable — links won’t be saved after you close this tab. Sign in to sync, or enable site storage.'), 800);
+        refresh(); recordNav(); return;
+      }
       try {
         const saved = await idbGetAll('links');
         items = saved;
@@ -5569,7 +5585,7 @@ import { conceptAliasesForToken, normalizeSearchConcept } from './search-concept
         const response = await fetch('/api/library/ask', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-          body: JSON.stringify({ question, previousQuestion: lastLibraryAskQuestion })
+          body: JSON.stringify({ question })
         });
         const data = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(data.error || 'Ask failed (' + response.status + ')');

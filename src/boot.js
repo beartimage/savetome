@@ -61,6 +61,10 @@ if (isAppRoute) {
     showAppStartError();
   });
 } else {
+  // Landing / failed-auth route: the head snippet may have painted the
+  // full-screen boot overlay (it adds `app-booting` on any ?onboarding),
+  // so it MUST be torn down here or the UI stays covered forever.
+  document.documentElement.classList.remove('app-booting');
   document.querySelector('meta[name="theme-color"]')?.setAttribute('content', '#212121');
   document.body.classList.add('landing-active');
   initLandingReveal();

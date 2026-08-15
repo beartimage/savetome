@@ -26,12 +26,21 @@ export async function handleLibraryApi(request, env, url, uid) {
   if (path === '/api/library/search' && request.method === 'GET') return librarySearch(env, uid, url);
   if (path === '/api/library/search-feedback' && request.method === 'POST') return librarySearchFeedback(request, env, uid, url);
   if (path === '/api/library/duplicates' && request.method === 'GET') return libraryDuplicates(env, uid);
-  if (path === '/api/library/check' && request.method === 'POST') return libraryCheckLinks(request);
+  if (path === '/api/library/check' && request.method === 'POST') {
+    if (request.headers.get('Origin') !== url.origin) return responseJson({ error: 'invalid_origin' }, 403);
+    return libraryCheckLinks(request);
+  }
   if (path === '/api/library/health-job' && (request.method === 'GET' || request.method === 'POST')) {
     return libraryHealthJob(request, env, uid, url);
   }
-  if (path === '/api/library/enrich' && request.method === 'POST') return libraryEnrich(request, env, uid);
-  if (path === '/api/library/ask' && request.method === 'POST') return askLibrary(request, env, uid);
+  if (path === '/api/library/enrich' && request.method === 'POST') {
+    if (request.headers.get('Origin') !== url.origin) return responseJson({ error: 'invalid_origin' }, 403);
+    return libraryEnrich(request, env, uid);
+  }
+  if (path === '/api/library/ask' && request.method === 'POST') {
+    if (request.headers.get('Origin') !== url.origin) return responseJson({ error: 'invalid_origin' }, 403);
+    return askLibrary(request, env, uid);
+  }
   return responseJson({ error: 'not_found' }, 404);
 }
 
@@ -1071,6 +1080,8 @@ async function fetchPublicPage(inputUrl) {
     assertPublicUrl(current);
     const response = await fetch(current.toString(), {
       redirect: 'manual',
+      // Bound every hop so a hostile or dead origin cannot hang the Worker.
+      signal: AbortSignal.timeout(8000),
       headers: {
         Accept: 'text/html,application/xhtml+xml,text/plain;q=0.8,*/*;q=0.1',
         'User-Agent': 'saveto.me-library-enricher/1.0'

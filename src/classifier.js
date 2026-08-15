@@ -124,9 +124,10 @@ const TAG_CASE = {
 };
 
 export function normalizeTag(tag) {
-  const key = tag.trim().toLowerCase();
+  const raw = String(tag == null ? '' : tag);
+  const key = raw.trim().toLowerCase();
   if (TAG_CASE[key]) return TAG_CASE[key];
-  return tag.trim().replace(/\b\w/g, c => c.toUpperCase());
+  return raw.trim().replace(/\b\w/g, c => c.toUpperCase());
 }
 
 // Turn a URL path into a human-readable title, e.g.
@@ -202,8 +203,8 @@ export function generateLinkMetadata(url, domain, path, title) {
   if (autoTags.length === 0) autoTags = ['Web'];
 
   // 5) Apply learned per-domain overrides (#11).
-  const ov = tagOverrides[host];
-  if (ov) {
+  const ov = Object.hasOwn(tagOverrides, host) ? tagOverrides[host] : null;
+  if (ov && Array.isArray(ov.remove) && Array.isArray(ov.add)) {
     autoTags = autoTags.filter(t => !ov.remove.includes(t));
     suggestedTags = suggestedTags.filter(t => !ov.remove.includes(t));
     ov.add.forEach(t => { if (!autoTags.includes(t)) autoTags.unshift(t); suggestedTags = suggestedTags.filter(s => s !== t); });
@@ -231,7 +232,7 @@ export function generateLinkMetadata(url, domain, path, title) {
 // hash-based fallback so every unknown tag still gets a consistent color.
 const TAG_COLOR_FALLBACK = ['tag-design','tag-dev','tag-db','tag-ai','tag-video','tag-doc','tag-social','tag-shop'];
 export function getTagColorClass(tag) {
-  const l = tag.toLowerCase();
+  const l = String(tag == null ? '' : tag).toLowerCase();
   if (/(design|ui|ux|inspiration|saas)/.test(l)) return 'tag-design';
   if (/(dev|code|git|api|sdk|backend|hosting|cloud|devops|package|q&a)/.test(l)) return 'tag-dev';
   if (/(database|postgres|sql|data|analytics)/.test(l)) return 'tag-db';

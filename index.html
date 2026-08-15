@@ -265,7 +265,7 @@
           <div class="sec-head reveal"><span class="eyebrow"><span class="dot"></span>Browser extensions</span><h2>Save without breaking your flow</h2><p>Capture the current page directly from your browser toolbar.</p></div>
           <div class="card extension-card reveal"><div class="extension-links">
             <a href="/extensions/saveto-me-chrome-edge-brave-opera.zip" download>Chrome · Edge · Brave · Opera ↓</a>
-            <a href="https://addons.mozilla.org/addon/saveto-me-smart-bookmarks/" target="_blank" rel="noopener noreferrer">Firefox — Install from Mozilla Add-ons ↗</a>
+            <a href="/extensions/saveto-me-firefox.xpi" download>Firefox ↓</a>
             <a href="/extensions/saveto-me-safari-web-extension-source.zip" download>Safari source ↓</a>
           </div></div>
         </div>
@@ -497,7 +497,7 @@
 
         <!-- Overflow menu: All Settings / Theme Switcher -->
         <div class="header-menu" id="headerMenu">
-          <button class="settings-btn" id="btnMenu" onclick="openHeaderAccountAction()" title="Sign in or open settings" aria-label="Sign in or open settings" aria-haspopup="dialog" aria-expanded="false">
+          <button class="settings-btn" id="btnMenu" onclick="openSettings()" title="All settings" aria-label="All settings" aria-haspopup="dialog" aria-controls="settingsOverlay" aria-expanded="false">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06-2.83 2.83-.06-.06a1.65 1.65 0 0 0-2.82 1.18V21h-4v-.17A1.65 1.65 0 0 0 7.1 19.65l-.06.06-2.83-2.83.06-.06A1.65 1.65 0 0 0 3.09 14H3v-4h.09A1.65 1.65 0 0 0 4.27 7.18l-.06-.06 2.83-2.83.06.06A1.65 1.65 0 0 0 10 3.17V3h4v.17a1.65 1.65 0 0 0 2.9 1.18l.06-.06 2.83 2.83-.06.06A1.65 1.65 0 0 0 20.91 10H21v4h-.09A1.65 1.65 0 0 0 19.4 15z"/></svg>
           </button>
           <div class="header-menu-dropdown" id="headerMenuDropdown" role="menu">
@@ -664,7 +664,7 @@
 
       <section class="settings-panel" id="settings-panel-capture" data-settings-panel="capture" role="tabpanel" aria-labelledby="settings-tab-capture" hidden>
         <div class="settings-panel-head"><span class="settings-panel-icon" aria-hidden="true">＋</span><div><h3>Save tools</h3><p>Save pages without copying and pasting between apps.</p></div></div>
-        <div class="settings-card"><div class="settings-card-icon" aria-hidden="true">▣</div><div class="settings-card-body"><div class="settings-card-title">Browser extensions</div><p class="settings-card-desc">Save the current page, a right-clicked link, or use the keyboard shortcut.</p><div class="settings-card-actions extension-downloads"><a class="modal-btn primary" href="/extensions/saveto-me-chrome-edge-brave-opera.zip" download>Chrome · Edge · Brave · Opera</a><a class="modal-btn" href="https://addons.mozilla.org/addon/saveto-me-smart-bookmarks/" target="_blank" rel="noopener noreferrer">Firefox — Mozilla Add-ons ↗</a><a class="modal-btn" href="/extensions/saveto-me-safari-web-extension-source.zip" download>Safari source</a></div></div></div>
+        <div class="settings-card"><div class="settings-card-icon" aria-hidden="true">▣</div><div class="settings-card-body"><div class="settings-card-title">Browser extensions</div><p class="settings-card-desc">Save the current page, a right-clicked link, or use the keyboard shortcut.</p><div class="settings-card-actions extension-downloads"><a class="modal-btn primary" href="/extensions/saveto-me-chrome-edge-brave-opera.zip" download>Chrome · Edge · Brave · Opera</a><a class="modal-btn" href="/extensions/saveto-me-firefox.xpi" download>Firefox</a><a class="modal-btn" href="/extensions/saveto-me-safari-web-extension-source.zip" download>Safari source</a></div></div></div>
         <div class="settings-card"><div class="settings-card-icon" aria-hidden="true">☆</div><div class="settings-card-body"><div class="settings-card-title">Quick-capture bookmarklet</div><p class="settings-card-desc">Drag this button to the bookmarks bar for a no-extension save button.</p><div class="settings-card-actions"><a class="modal-btn primary bookmarklet-btn" id="bookmarkletLink" draggable="true">＋ Save to saveto.me</a></div></div></div>
       </section>
 

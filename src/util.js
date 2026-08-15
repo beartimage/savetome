@@ -43,6 +43,7 @@ export function safeHttpUrl(u) {
 export function safeUrl(u) {
   const raw = stripAsciiControls(u).trim();
   if (/^(https?:|mailto:|tel:|ftp:)/i.test(raw)) return esc(raw);
+  if (/^\/\//.test(raw)) return '#';                        // protocol-relative //host → treat as unsafe (would navigate off-site)
   if (/^(\/|#|\?|\.)/.test(raw)) return esc(raw);           // relative/in-page links
   if (raw && !/^[a-z][a-z0-9+.-]*:/i.test(raw)) return esc(raw); // scheme-less (e.g. example.com/x)
   return '#';                                               // javascript:, data:, vbscript:, …

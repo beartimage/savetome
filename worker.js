@@ -35,7 +35,7 @@ const SECURITY_HEADERS = {
   'Content-Security-Policy': "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' https: data:; connect-src 'self' https:; font-src 'self' data: https://fonts.gstatic.com; upgrade-insecure-requests",
   'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), payment=()',
   'Referrer-Policy': 'strict-origin-when-cross-origin',
-  'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
+  'Strict-Transport-Security': 'max-age=31536000; includeSubDomains; preload',
   'Cross-Origin-Opener-Policy': 'same-origin',
   'X-Content-Type-Options': 'nosniff',
   'X-Frame-Options': 'DENY'
@@ -190,6 +190,9 @@ async function handleApi(request, env, url, ctx) {
   if (m && method === 'GET') return oauthCallback(m[1], request, env, url);
 
   if (path === '/api/auth/logout' && method === 'POST') {
+    // Reject cross-site forged logouts (CSRF): a hostile page must not be able
+    // to sign the user out. The app always calls this same-origin.
+    if (request.headers.get('Origin') !== url.origin) return json({ error: 'invalid_origin' }, 403);
     // Revoke the session server-side, not just in the browser: bump the user's
     // token_version so any still-valid copy of the old cookie stops working.
     const p = await verifyJwt(getCookie(request, SESSION_COOKIE), env);

@@ -59,12 +59,11 @@ inline-editable notes, drag-and-drop into folders, client-side search.
   is its own row in D1 `items` (`user_id,id,data,updated_at,deleted`); deletions are
   **tombstones** (`deleted=1`, kept so a stale device can't resurrect an item).
   Projects/tags/view prefs ride along as one small versioned blob in D1 `settings`.
-  - `GET /api/sync?since=<ts>` returns items changed since `ts` + settings + server
-    `now`. `PUT /api/sync` takes `{items:[{id,data,updatedAt}|{id,deleted:1,updatedAt}],
-    settings:{blob,updatedAt}}` and **conditionally upserts** each row
-    (`ON CONFLICT ... WHERE excluded.updated_at >= <table>.updated_at`) — this per-row
-    merge is what stops one device clobbering another.
-  - Frontend: every DB write helper stamps `item.updatedAt = Date.now()` and tracks
+  - `GET /api/sync?since=<ts>` returns a bounded first page; clients follow the
+    opaque `nextCursor` until absent. `PUT /api/sync` validates a maximum of 500
+    changes and assigns the conflict timestamp on the server. Client clocks never
+    decide conflict order, so a device set far into the future cannot freeze rows.
+  - Frontend: every DB write helper tracks
     `cloud.dirty` (changed ids) + `cloud.deletes` (id→ts tombstones, persisted to the
     `meta` store so an offline delete survives reload). `cloudInit()` after `initStore()`:
     `GET /api/me` → if signed in, `cloudSync(true)` does a full bidirectional merge
@@ -109,8 +108,8 @@ inline-editable notes, drag-and-drop into folders, client-side search.
   delta sync (see the cloud-sync section).
 - **Cloud scale** — there is **no 5 MB whole-library cap** (the old `MAX_STATE_BYTES` blob
   limit is gone). `cloudPushNow()` sends changes in batches of `CHUNK` (500) items so even a
-  first-login push of a 100k-item library stays under the worker's per-request cap
-  (`MAX_SYNC_BYTES` 8 MB). Cloud sync scales with the same ~100k headroom as local storage.
+  first-login push of a large library stays under the Worker's 1.5 MB request cap.
+  Pulls are cursor-paginated in pages of at most 500 rows.
 - **Chunked rendering** — `renderItems` sets `_visible` then `renderNextChunk()` appends
   `CHUNK` (80) cards at a time; an IntersectionObserver on a `#scroll-sentinel` (sibling of
   `#linkList` inside `.content-scroll`, `rootMargin:600px`) loads the next batch. Any

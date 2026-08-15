@@ -1,4 +1,4 @@
-# saveto.me — Accounts + Sync setup (Cloudflare)
+# saveto.me — Personal Internet Library setup (Cloudflare)
 
 This adds real sign-in (Google / GitHub) and per-user cloud sync on top of the
 static app. The app still works with **no** backend — it silently stays in
@@ -13,7 +13,9 @@ Browser (index.html + src/, built to dist/)
 Cloudflare Worker (worker.js)
    |  OAuth (Google/GitHub) + sessions (signed JWT cookie)
    v
-D1 (SQLite)  ->  users + per-user state blob
+D1 (SQLite + FTS5) -> users + bookmark rows + private full-text index
+Workers AI          -> multilingual embeddings + grounded answers
+Vectorize           -> tenant-namespaced semantic vectors
 ```
 
 You only need to do this once. Requires the Wrangler CLI:
@@ -43,6 +45,18 @@ Create the tables (remote):
 wrangler d1 execute d1savetome --remote --file=./schema.sql
 ```
 
+For an existing deployment, preview and apply pending migrations before the
+newer Worker is deployed:
+
+```bash
+wrangler d1 migrations list d1savetome --remote
+wrangler d1 migrations apply d1savetome --remote
+```
+
+Migration `0002_server_owned_sync_time.sql` clamps legacy future timestamps.
+Migration `0003_personal_library_index.sql` adds full-text, enrichment, duplicate,
+and Ask tables and backfills existing bookmarks without replacing sync data.
+
 ## 2. Create the OAuth apps
 
 You need one per provider. The **redirect / callback URL** must be exactly
@@ -52,6 +66,9 @@ You need one per provider. The **redirect / callback URL** must be exactly
 https://saveto.me/api/auth/google/callback
 https://saveto.me/api/auth/github/callback
 ```
+
+`https://www.saveto.me` permanently redirects to the primary origin before
+OAuth begins, so a second `www` callback does not need to be registered.
 
 Also register the workers.dev origin so sign-in works there too (the Worker
 derives the redirect URI from the request origin automatically, so every origin
@@ -97,10 +114,20 @@ wrangler secret put SESSION_SECRET        # any long random string, e.g. `openss
 npm run build && wrangler deploy
 ```
 
+Run the local safety checks first:
+
+```bash
+npm run check
+```
+
 > Note: this switches deployment from "upload static assets" to a Wrangler
 > Worker deploy. Always `npm run build` first — wrangler serves the built
 > `dist/`. After the first deploy, the Worker serves both the app (from
 > `dist/`) and the `/api/*` backend.
+
+The existing `wrangler.toml` binds Workers AI and the `savetome-library`
+Vectorize index. For a fresh account, create an equivalent 1024-dimension cosine
+index before deployment.
 
 ## 5. Verify
 
@@ -135,3 +162,6 @@ SESSION_SECRET=dev-secret
   to ~100k links. (The legacy single-blob `state` table is auto-migrated on first sync.)
 - Opening the built `dist/index.html` directly (file://) or hosting `dist/` as pure
   static files (no Worker) keeps the app fully functional in local-only mode.
+- The server owns sync timestamps, so a device clock set far into the future
+  cannot freeze a bookmark.
+- Pull sync is cursor-paginated; clients follow `nextCursor` until it is absent.

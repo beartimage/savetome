@@ -1,0 +1,24 @@
+{
+  "summary": {
+    "en-US": "Next-Gen AI Bookmark Manager for saving pages, links, and selected text to saveto.me."
+  },
+  "description": {
+    "en-US": "saveto.me is a Next-Gen AI Bookmark Manager for everything you want to keep online. Save the current page from the toolbar or keyboard shortcut, save a link from the context menu, or save selected text with its source page. AI adds useful context, groups related saves with smart folders and tags, detects duplicates, and makes everything easy to find with keyword, full-text, and semantic search. Ask My Library answers questions using your saved sources.\n\nThe extension only processes page information after you explicitly choose a save action. It does not continuously monitor browsing activity, display advertising, or sell browsing information. Sign in only when you want private synchronization across devices; local saving remains available without an account.\n\nPrivacy: https://saveto.me/privacy/\nSupport: https://saveto.me/contact/"
+  },
+  "categories": ["bookmarks"],
+  "homepage": {
+    "en-US": "https://saveto.me/"
+  },
+  "support_email": {
+    "en-US": "contact@beartimage.com"
+  },
+  "is_experimental": false,
+  "requires_payment": false,
+  "version": {
+    "license": "all-rights-reserved",
+    "release_notes": {
+      "en-US": "Version 1.2.2 updates the branding to Next-Gen AI Bookmark Manager and clarifies saving, smart organization, duplicate detection, search, and Ask My Library."
+    },
+    "approval_notes": "The primary capture flow requires no reviewer credentials. Install the extension, open any HTTPS page, and use the toolbar button, context-menu save command, or Command+Shift+S / Alt+Shift+S. The extension reads and transfers the page URL and title only after a user-initiated save action. The Save selected text command additionally transfers only the text explicitly selected by the user. Capture data is carried in the browser URL fragment, which is not sent in the HTTP request URL, and is removed immediately after the saveto.me application reads it. The extension has no remote executable code, content scripts, analytics, advertising, or background browsing monitor. Optional account sign-in is not required to test local saving. Privacy policy: https://saveto.me/privacy/"
+  }
+}

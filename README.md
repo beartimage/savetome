@@ -1,14 +1,22 @@
-# saveto.me — Smart Bookmark Manager
+# saveto.me — Personal Internet Library
 
-A fast, in-browser bookmark manager. Paste a URL to save it; links are auto-tagged
-and given a description from the domain, organized into **Projects** (folders), and
-shown in compact/detailed and list/grid views. Everything runs client-side.
+A private library for everything worth keeping from the internet. Paste a URL or
+use the browser extension; saveto.me stores it, extracts useful page content,
+classifies it, finds duplicates, and makes it searchable by keywords or meaning.
+The local-first app remains useful without an account; sign-in adds cloud sync and
+server-side intelligence on Cloudflare.
 
-## Features (from the current prototype)
+## Features
 - **Quick save** — paste a URL in the top bar and press Enter.
-- **Smart tags (on-device)** — a curated domain knowledge base + keyword lexicon
-  scores, dedupes, and normalizes tags and writes a short description. Fully in the
-  browser, no backend or API key.
+- **Auto-categorization and smart tags** — fast on-device classification immediately,
+  followed by private server-side page enrichment when signed in.
+- **Hybrid search** — D1 FTS5 full-text search and multilingual semantic similarity
+  are combined into one ranked result set; keyword-only mode is one click away.
+- **Duplicate detection** — catches normalized URL duplicates and same-content copies.
+- **Ask My Library** — answers only from the signed-in user's indexed collection and
+  returns clickable supporting sources.
+- **Browser extension** — the Manifest V3 extension in `extension/` saves the active
+  tab or a right-clicked link through the first-party saveto.me capture flow.
 - **Projects** — sidebar folders with live counts. **Auto-created**: saving a link with no
   active folder makes a topical folder from its strongest tag (or domain). **Manual**
   folders are "priority" — they sort first and show a ★ star (auto ones show a folder).
@@ -17,14 +25,16 @@ shown in compact/detailed and list/grid views. Everything runs client-side.
 - **Views** — a single switch: **Lines** (compact list) or **Pinterest** (grid masonry with
   a website preview image + short description).
 - **Editable notes** — click a card's note to edit inline.
-- **Search** — type (non-URL) text to filter by title, description, note, domain, or tag.
+- **Search** — searches title, extracted text, description, note, domain, folder, and tags.
 - **Import / export** — settings gear (header) imports browser bookmark `.html` files
   (Chrome/Firefox/Safari/Edge — folders become projects) or a saveto.me `.json` backup, and
   exports as browser-importable HTML or full JSON. Duplicates are skipped on import.
 - **Clickable pastel tags** — tags everywhere are colored text (one unified pastel palette,
   not pills); click one to filter. The sidebar shows the top 10; "Show all" opens a
   searchable tags modal.
-- **Themes** — Light, Dark, Green, Red, Black (OLED), and Gold. Picker in the header ⋮ menu; choice persists.
+- **Accessible themes** — Light, Dark, Green, Red, OLED, and Gold use semantic color
+  tokens for backgrounds, text, icons, focus rings, tags, and controls. Contrast is
+  regression-tested and the choice persists.
 - **Privacy mode** — a Settings toggle that stops all external favicon/preview requests: favicons
   become local letter badges and the Pinterest view uses local placeholders, so saved URLs never
   reach Google or WordPress. Off by default; persists once enabled.
@@ -32,10 +42,10 @@ shown in compact/detailed and list/grid views. Everything runs client-side.
   library across devices. Backed by a Cloudflare Worker + D1; the app still works
   fully local-only with no account. See **SETUP.md**.
 
-## Known gaps / next steps
+## Storage and scale
 - **Persistence: done** — links live in **IndexedDB** (`savemeDB`), loaded into memory on
   boot and written through on every change. Survives reloads; no 5 MB localStorage cap.
-  First run seeds the store with the built-in sample links. Signed in, each bookmark is
+  First run starts with an empty private library. Signed in, each bookmark is
   synced as its own row in D1 (delta sync — see below).
 - **Cloud sync: per-object delta sync** — each bookmark is an individual D1 row with its
   own `updated_at` (plus deletion tombstones); changes are merged **per row**, so editing
@@ -57,8 +67,9 @@ shown in compact/detailed and list/grid views. Everything runs client-side.
   local placeholders — so nothing about your saved URLs leaves the browser (the
   one-time webfont still loads at page start; self-host it to remove that too).
   Apart from these, the tagger, storage, and search all run on-device.
-- No real page-title/description fetch (blocked by CORS client-side); title is
-  derived from the URL and the description from the on-device classifier.
+- Signed-in enrichment is processed by the Worker with public-network SSRF guards,
+  a strict response-size limit, sanitized text extraction, and per-user AI quotas.
+  Sites that block automated fetches fall back to locally derived metadata.
 
 ## Run
 Install deps then start the Vite dev server:
@@ -66,6 +77,9 @@ Install deps then start the Vite dev server:
 cd ~/Desktop/saveto.me && npm install && npm run dev
 ```
 Production build lands in `dist/`: `npm run build`.
+
+Run tests, the production build, and a Wrangler dry-run together with
+`npm run check`.
 
 ## Deploy
 Deployed as a **Cloudflare Worker**. Build first, then deploy — wrangler serves the
@@ -82,9 +96,11 @@ backend it is still a plain static site (any static host / GitHub Pages) in loca
 - **Never** published to QNR Tools Hub or the script launcher.
 
 ## Stack
-- SPA split into `index.html` (markup) + `src/app.js` (all JS, ES module) + `src/styles.css`,
-  bundled by **Vite** into `dist/`; Plus Jakarta Sans throughout. Optional Cloudflare Worker
-  (`worker.js`) + D1 for accounts/sync. **Two-tone dashboard
+- SPA split into `index.html` (markup) + `src/app.js` (ES module) + `src/styles.css`,
+  bundled by **Vite** into `dist/`; Plus Jakarta Sans throughout. A **Cloudflare Worker**
+  serves assets and the API; D1 stores sync/search metadata, Workers AI generates
+  multilingual embeddings and grounded answers, and Vectorize stores per-user vectors.
+  **Two-tone dashboard
   theme** (SwiftHub reference) — dark navy sidebar with purple accent, orange count
   badges, and feather-style line icons on every row; light lavender-gray content area
   with white cards, purple `#6C5CE7` accents, and soft shadows. Six selectable themes.

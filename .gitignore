@@ -12,11 +12,28 @@ tmp/
 
 # Cloudflare / Wrangler
 .wrangler/
+.wrangler-check/
 .dev.vars
 node_modules/
-
-# Vite build output (rebuilt via `npm run build` before deploy)
 dist/
 
-# Archives / large binaries (not part of the app)
-*.zip
+# Build caches
+.npm-cache/
+build/
+public/extensions/
+
+# Local audit / QA session artifacts (not part of the app)
+audit/
+audit-current/
+color-audit/
+artifacts/
+work/
+*.cpuprofile
+worker-startup.cpuprofile
+/design-*.png
+/full-redesign-*.png
+/landing-mobile-qa.png
+PHASE_0_CHANGELOG.md
+design-qa.md
+
+worker-configuration.d.ts

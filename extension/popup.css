@@ -1,0 +1,32 @@
+:root {
+  color-scheme: light;
+  font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --graphite: #212121;
+  --paper: #fafafa;
+  --orange: #f4511e;
+  --orange-hover: #ff6a3d;
+  --orange-soft: #fff0ea;
+  --line: #dedede;
+  --metadata: #616161;
+}
+* { box-sizing: border-box; }
+body { width: 360px; margin: 0; color: var(--graphite); background: var(--paper); }
+header { display: flex; align-items: center; gap: 10px; padding: 16px 18px; background: var(--graphite); color: var(--paper); }
+header img { border-radius: 9px; }
+header div { display: flex; flex-direction: column; gap: 1px; }
+header strong { font-size: 15px; }
+header span { color: #c7c7c7; font-size: 10px; letter-spacing: .05em; text-transform: uppercase; }
+main { padding: 18px; }
+.page-card { display: flex; align-items: center; gap: 12px; min-height: 84px; padding: 13px; border: 1px solid var(--line); border-radius: 14px; background: #fff; }
+.site-letter { display: grid; place-items: center; flex: 0 0 42px; height: 42px; border-radius: 12px; background: var(--orange-soft); color: #9f2e09; font-size: 18px; font-weight: 800; }
+.page-copy { min-width: 0; }
+.page-title { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; font-size: 13px; font-weight: 750; line-height: 1.35; }
+.page-url { overflow: hidden; margin-top: 4px; color: var(--metadata); font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
+button { width: 100%; border: 0; border-radius: 12px; font: inherit; font-size: 13px; font-weight: 750; cursor: pointer; }
+.save { margin-top: 14px; padding: 12px 14px; background: var(--orange); color: var(--graphite); box-shadow: none; }
+.save:hover { background: var(--orange-hover); }
+.save:disabled { cursor: default; background: #f2b8a5; color: var(--graphite); }
+.open { margin-top: 8px; padding: 10px 14px; background: transparent; color: var(--graphite); }
+.open:hover { background: var(--orange-soft); }
+button:focus-visible { outline: 3px solid var(--graphite); outline-offset: 2px; }
+p { margin: 12px 5px 0; color: var(--metadata); font-size: 10px; line-height: 1.45; text-align: center; }

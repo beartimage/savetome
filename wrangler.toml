@@ -1,7 +1,13 @@
 # Must match the existing deployed Worker that owns the saveto.me custom domain.
 name = "savetome-website"
+account_id = "388eb0cf42ff27c5ec9ac0262e384e4c"
 main = "worker.js"
-compatibility_date = "2024-11-01"
+compatibility_date = "2026-08-08"
+compatibility_flags = ["nodejs_compat"]
+
+[observability]
+enabled = true
+head_sampling_rate = 0.1
 
 # Static SPA assets. The Worker (worker.js) handles /api/*; everything else
 # is served from here via the ASSETS binding. Built by Vite (`npm run build`)
@@ -10,12 +16,40 @@ compatibility_date = "2024-11-01"
 directory = "./dist"
 binding = "ASSETS"
 not_found_handling = "single-page-application"
+# Route static requests through worker.js so security headers are applied to
+# HTML, JavaScript, CSS, and other assets as well as to API responses.
+run_worker_first = true
 
 # D1 database — created via `wrangler d1 create d1savetome`.
 [[d1_databases]]
 binding = "DB"
 database_name = "d1savetome"
 database_id = "67df25cb-9eda-4fbf-bea6-1ca3415237f5"
+migrations_dir = "./migrations"
+
+# Multilingual embeddings and grounded answers for the Personal Internet
+# Library. Workers AI has a daily free allocation; the Worker also enforces
+# conservative per-user daily request limits and falls back to keyword search.
+[ai]
+binding = "AI"
+
+[[vectorize]]
+binding = "LIBRARY_INDEX"
+index_name = "savetome-library"
+
+# Durable background link-health scans. The same Worker produces small job
+# messages and consumes them in bounded, idempotent D1-backed batches.
+[[queues.producers]]
+binding = "LINK_HEALTH_QUEUE"
+queue = "savetome-link-health"
+
+[[queues.consumers]]
+queue = "savetome-link-health"
+max_batch_size = 1
+max_batch_timeout = 5
+max_retries = 5
+retry_delay = 20
+max_concurrency = 4
 
 # Public (non-secret) OAuth client IDs. Secrets are set separately with
 # `wrangler secret put` — see SETUP.md. Do NOT put client secrets here.

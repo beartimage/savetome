@@ -1,0 +1,525 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>saveto.me — Save anything. Find everything.</title>
+<meta name="description" content="saveto.me is AI-powered smart bookmarks. Save any link and it's auto-tagged, filed, and instantly findable by keyword or meaning. Private by default.">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<meta name="theme-color" content="#161311">
+<meta name="application-name" content="saveto.me">
+<meta name="apple-mobile-web-app-title" content="saveto.me">
+<meta name="format-detection" content="telephone=no">
+<link rel="canonical" href="https://saveto.me/">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="saveto.me">
+<meta property="og:title" content="saveto.me — Save anything. Find everything.">
+<meta property="og:description" content="AI-powered smart bookmarks with automatic organization, hybrid search, duplicate detection, and Ask My Library.">
+<meta property="og:url" content="https://saveto.me/">
+<meta property="og:image" content="https://saveto.me/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="saveto.me AI-powered smart bookmark library">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="saveto.me — Save anything. Find everything.">
+<meta name="twitter:description" content="Save, organize, search, and ask questions across everything you keep online.">
+<meta name="twitter:image" content="https://saveto.me/og-image.png">
+<meta name="twitter:image:alt" content="saveto.me AI-powered smart bookmark library">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png?v=20260813-13">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png?v=20260813-13">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=20260813-13">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet">
+<noscript><style>.reveal{opacity:1 !important;transform:none !important}</style></noscript>
+<style>
+  :root{
+    --bg:#161311; --bg-2:#1b1714; --panel:#201c19; --panel-2:#262119; --panel-3:#2c2622;
+    --line:rgba(255,255,255,.09); --line-2:rgba(255,255,255,.14);
+    --orange:#F4511E; --coral:#FF6A3D; --amber:#FF9F1C; --gold:#FFC24B; --deep:#A9320C;
+    --o-border:rgba(244,81,30,.45); --o-soft:rgba(244,81,30,.12);
+    --text:#FAFAFA; --sub:#b6ada7; --muted:#877d76;
+    --r-sm:12px; --r-md:16px; --r-lg:22px; --r-xl:30px;
+    --font:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --maxw:1200px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0; font-family:var(--font); color:var(--text); background:var(--bg); -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility; line-height:1.55; overflow-x:hidden}
+  /* warm ambient glow anchored to page corners */
+  body:before{content:""; position:fixed; inset:0; z-index:-2; pointer-events:none;
+    background:
+      radial-gradient(760px 480px at 8% -6%, rgba(244,81,30,.20), transparent 60%),
+      radial-gradient(680px 460px at 100% 4%, rgba(255,159,28,.10), transparent 60%),
+      radial-gradient(900px 700px at 88% 96%, rgba(244,81,30,.08), transparent 62%)}
+  body:after{content:""; position:fixed; inset:0; z-index:-2; pointer-events:none; opacity:.5;
+    background-image:linear-gradient(rgba(255,255,255,.028) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.028) 1px,transparent 1px);
+    background-size:60px 60px; -webkit-mask-image:radial-gradient(1200px 800px at 50% 0%,#000,transparent 80%); mask-image:radial-gradient(1200px 800px at 50% 0%,#000,transparent 80%)}
+  a{color:inherit; text-decoration:none}
+  .wrap{max-width:var(--maxw); margin:0 auto; padding:0 24px}
+  h1,h2,h3,h4{margin:0; letter-spacing:-.03em; line-height:1.05}
+
+  /* eyebrow pill (orange-outlined) */
+  .eyebrow{display:inline-flex; align-items:center; gap:10px; font-size:12.5px; font-weight:800; letter-spacing:.09em; text-transform:uppercase; color:#fff; background:linear-gradient(180deg,rgba(244,81,30,.16),rgba(244,81,30,.06)); border:1px solid var(--o-border); padding:8px 16px; border-radius:999px; box-shadow:0 8px 24px -14px rgba(244,81,30,.7)}
+  .eyebrow .dot{width:8px;height:8px;border-radius:50%;background:var(--orange); box-shadow:0 0 0 4px rgba(244,81,30,.22), 0 0 12px 1px rgba(244,81,30,.9)}
+
+  /* buttons */
+  .btn{display:inline-flex; align-items:center; justify-content:center; gap:10px; font:inherit; font-weight:700; font-size:15px; cursor:pointer; border:0; padding:14px 24px; border-radius:999px; transition:transform .18s ease, box-shadow .18s ease, background .18s}
+  .btn svg{width:18px;height:18px}
+  .btn-primary{color:#212121; background:var(--orange); box-shadow:0 10px 24px -14px rgba(244,81,30,.72), inset 0 1px 0 rgba(255,255,255,.28); position:relative}
+  .btn-primary:hover{transform:translateY(-1px); box-shadow:0 14px 28px -13px rgba(244,81,30,.84), inset 0 1px 0 rgba(255,255,255,.38)}
+  .btn-ghost{color:#fff; background:rgba(255,255,255,.06); border:1px solid var(--line-2)}
+  .btn-ghost:hover{background:rgba(255,255,255,.11); transform:translateY(-2px)}
+
+  /* ---------- NAV ---------- */
+  .nav-shell{position:fixed; top:16px; left:0; right:0; z-index:60; display:flex; justify-content:center; padding:0 16px}
+  .nav{width:100%; max-width:920px; display:flex; align-items:center; justify-content:space-between; height:52px; padding:0 8px 0 10px; border-radius:999px; background:rgba(22,19,17,.72); backdrop-filter:saturate(160%) blur(18px); -webkit-backdrop-filter:saturate(160%) blur(18px); border:1px solid var(--line); box-shadow:0 14px 36px -20px rgba(0,0,0,.85)}
+  .brand{display:flex; align-items:center; gap:8px; color:#fff; font-weight:800; font-size:18px; letter-spacing:-.02em}
+  .brand .mark{width:32px;height:32px;border-radius:9px; display:block; box-shadow:0 8px 18px -9px rgba(0,0,0,.7)}
+  .brand .tld{color:var(--orange)}
+  .nav-links{display:flex; align-items:center; gap:26px}
+  .nav-links a{color:#cfc8c3; font-size:14px; font-weight:600; transition:color .15s}
+  .nav-links a:hover{color:#fff}
+  .nav .btn-primary{padding:9px 17px; font-size:14px}
+  @media(max-width:920px){.nav-links{display:none}}
+
+  /* ---------- HERO ---------- */
+  .hero{position:relative; padding:150px 0 40px; text-align:center}
+  .hero-inner{position:relative; z-index:1; max-width:840px; margin:0 auto; display:flex; flex-direction:column; align-items:center}
+  .hero h1{font-size:clamp(44px,7.4vw,92px); font-weight:900; margin:20px 0 0; letter-spacing:-.045em; line-height:1.02}
+  .hero h1 .accent{background:linear-gradient(100deg,var(--coral),var(--orange) 55%,var(--amber)); -webkit-background-clip:text; background-clip:text; color:transparent; display:block; padding-bottom:.06em}
+  .hero .lede{color:var(--sub); font-size:19px; max-width:560px; margin:20px 0 0; font-weight:450; line-height:1.5}
+  .hero-actions{display:flex; gap:13px; margin-top:30px; flex-wrap:wrap; justify-content:center}
+  .imports{display:flex; align-items:center; gap:11px; margin-top:30px; flex-wrap:wrap; justify-content:center}
+  .imports .lbl{font-size:11.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--muted)}
+  .imports .ch{font-size:12.5px; font-weight:600; color:#d3ccc7; border:1px solid var(--line-2); padding:6px 14px; border-radius:999px}
+
+  /* product window (dark glass) */
+  .stage{position:relative; z-index:1; margin-top:44px; max-width:1000px; margin-left:auto; margin-right:auto; padding:0 24px}
+  .stage .halo{position:absolute; inset:-30px 6% 30px; z-index:-1; border-radius:40px; background:radial-gradient(closest-side, rgba(244,81,30,.5), rgba(255,159,28,.25), transparent); filter:blur(60px)}
+  .win{background:linear-gradient(180deg,#221d1a,#1a1613); border:1px solid var(--line-2); border-radius:20px; overflow:hidden; box-shadow:0 60px 120px -40px rgba(0,0,0,.9)}
+  .win-top{display:flex; align-items:center; gap:13px; padding:14px 16px; border-bottom:1px solid var(--line)}
+  .dots{display:flex; gap:7px}
+  .dots i{width:11px;height:11px;border-radius:50%}
+  .dots i:nth-child(1){background:#ff5f57}.dots i:nth-child(2){background:#febc2e}.dots i:nth-child(3){background:#28c840}
+  .win-search{flex:1; display:flex; align-items:center; gap:10px; background:rgba(255,255,255,.05); border:1px solid var(--line); border-radius:10px; padding:10px 13px; font-size:13px; color:var(--muted)}
+  .win-search svg{width:15px;height:15px}
+  .win-search .spark{margin-left:auto; width:24px;height:24px;border-radius:7px; background:linear-gradient(180deg,var(--coral),var(--orange)); display:grid; place-items:center; box-shadow:0 6px 16px -6px rgba(244,81,30,.9)}
+  .win-search .spark svg{width:13px;height:13px;color:#fff}
+  .win-body{display:grid; grid-template-columns:210px 1fr}
+  .win-side{padding:18px 14px; border-right:1px solid var(--line)}
+  .win-side .h{font-size:10.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin:0 6px 8px}
+  .win-side .h.mt{margin-top:18px}
+  .srow{display:flex; align-items:center; gap:10px; padding:8px; border-radius:9px; font-size:13.5px; font-weight:600; color:var(--sub)}
+  .srow.active{background:var(--o-soft); color:#fff; border:1px solid var(--o-border)}
+  .srow .ic{width:16px;height:16px; flex:none; color:var(--muted)}
+  .srow.active .ic{color:var(--orange)}
+  .srow .ct{margin-left:auto; font-size:12px; font-weight:700; color:var(--muted)}
+  .tagwrap{display:flex; flex-wrap:wrap; gap:8px; padding:2px 6px}
+  .tagwrap span{font-size:12.5px; font-weight:700; color:#e7b7a4; border:1px solid var(--o-border); background:var(--o-soft); padding:4px 10px; border-radius:999px}
+  .win-main{padding:16px 18px}
+  .win-main .mh{display:flex; align-items:center; margin-bottom:12px}
+  .win-main .mh h5{margin:0; font-size:15px; font-weight:750; color:#fff}
+  .win-main .mh .cnt{margin-left:auto; font-size:12px; color:var(--muted); font-weight:600}
+  .rescard{display:flex; align-items:center; gap:13px; padding:13px; border:1px solid var(--line); border-radius:13px; background:rgba(255,255,255,.025); margin-bottom:10px}
+  .rescard:last-child{margin-bottom:0}
+  .rescard .fav{width:36px;height:36px;border-radius:10px; flex:none; display:grid; place-items:center; color:#fff; font-weight:800; font-size:15px}
+  .rescard .ti{font-weight:650; font-size:14.5px; color:#fff}
+  .rescard .dm{font-size:12.5px; color:var(--muted); margin-top:1px}
+  .rescard .badge{margin-left:auto; font-size:11px; font-weight:700; padding:4px 10px; border-radius:999px; border:1px solid var(--o-border); color:#e7b7a4; background:var(--o-soft)}
+  @media(max-width:720px){.win-body{grid-template-columns:1fr}.win-side{display:none}}
+
+  /* ---------- Marquee ---------- */
+  .marq{overflow:hidden; padding:18px 0; border-top:1px solid var(--line); border-bottom:1px solid var(--line); margin-top:40px; -webkit-mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent); mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}
+  .marq .track{display:flex; gap:44px; width:max-content; animation:scroll 30s linear infinite}
+  .marq b{font-size:14.5px; font-weight:600; color:var(--muted); white-space:nowrap; display:inline-flex; align-items:center; gap:10px}
+  .marq b:before{content:""; width:6px;height:6px;border-radius:50%; background:var(--orange); box-shadow:0 0 8px 1px rgba(244,81,30,.8)}
+  @keyframes scroll{to{transform:translateX(-50%)}}
+
+  /* ---------- Sections ---------- */
+  .sec{position:relative; padding:62px 0}
+  .sec-head{max-width:640px; margin:0 auto; text-align:center; display:flex; flex-direction:column; align-items:center}
+  .sec-head h2{font-size:clamp(30px,4.2vw,48px); font-weight:850; margin-top:16px}
+  .sec-head p{color:var(--sub); font-size:17px; margin:14px 0 0}
+
+  /* generic dark card */
+  .card{background:linear-gradient(180deg,var(--panel),#1a1613); border:1px solid var(--line); border-radius:var(--r-lg); position:relative; overflow:hidden}
+  .card .glow-tl{position:absolute; top:-120px; left:-120px; width:320px; height:320px; border-radius:50%; background:radial-gradient(closest-side, rgba(244,81,30,.35), transparent 70%); pointer-events:none}
+
+  /* Showcase (alternating) */
+  .show{display:grid; grid-template-columns:1fr 1fr; gap:44px; align-items:center; margin-top:40px}
+  .show.rev .show-media{order:-1}
+  .show + .show{margin-top:44px}
+  .show .tag{display:inline-flex; align-items:center; gap:8px; font-size:12px; font-weight:800; color:var(--coral); text-transform:uppercase; letter-spacing:.06em}
+  .show h3{font-size:clamp(26px,3vw,38px); font-weight:800; margin-top:12px}
+  .show p{color:var(--sub); font-size:16.5px; margin:14px 0 0; max-width:460px}
+  .show ul{list-style:none; margin:20px 0 0; padding:0; display:grid; gap:13px}
+  .show li{display:flex; gap:13px; align-items:center; font-size:15.5px; color:#eae4e0; font-weight:500}
+  .check{flex:none; width:26px;height:26px;border-radius:9px; background:linear-gradient(180deg,var(--coral),var(--orange)); color:#fff; display:grid; place-items:center; box-shadow:0 8px 18px -8px rgba(244,81,30,.9)}
+  .check svg{width:15px;height:15px}
+  .panel{padding:24px; position:relative}
+  @media(max-width:860px){.show{grid-template-columns:1fr; gap:30px}.show.rev .show-media{order:0}.show + .show{margin-top:34px}}
+
+  .m-search{display:flex; align-items:center; gap:10px; background:rgba(255,255,255,.05); border:1px solid var(--line); border-radius:12px; padding:12px 14px; font-size:14px; color:#fff; font-weight:600}
+  .m-search svg{width:17px;height:17px;color:var(--orange)}
+  .m-res{margin-top:12px; display:grid; gap:9px}
+  .m-hit{border:1px solid var(--line); border-radius:12px; padding:11px 13px; display:flex; align-items:center; gap:10px; background:rgba(255,255,255,.02)}
+  .m-hit .b{margin-left:auto; font-size:10.5px; font-weight:800; padding:4px 10px; border-radius:999px; border:1px solid var(--o-border); color:#e7b7a4; background:var(--o-soft)}
+  .m-hit .t{font-size:13.5px; font-weight:700; color:#fff}
+  .m-hit .d{font-size:11.5px; color:var(--muted)}
+  .org{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+  .fol{border:1px solid var(--line); border-radius:13px; padding:14px; background:rgba(255,255,255,.02)}
+  .fol .rowh{display:flex; align-items:center; gap:8px; font-weight:700; font-size:13.5px; color:#fff}
+  .fol .rowh .ic{width:17px;height:17px; color:var(--orange)}
+  .fol .rowh .ct{margin-left:auto; font-size:11px; font-weight:800; color:var(--muted)}
+  .fol .tgs{display:flex; gap:7px; margin-top:10px; flex-wrap:wrap}
+  .fol .tgs span{font-size:11px; font-weight:700; color:#e7b7a4; border:1px solid var(--o-border); padding:3px 8px; border-radius:999px}
+
+  /* Capability grid */
+  .grid{display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:38px}
+  .g{padding:24px}
+  .g:hover{border-color:var(--o-border)}
+  .g .ic{width:48px;height:48px;border-radius:13px; display:grid; place-items:center; margin-bottom:15px; color:#fff; background:linear-gradient(180deg,var(--coral),var(--orange)); box-shadow:0 14px 28px -12px rgba(244,81,30,.8)}
+  .g .ic svg{width:23px;height:23px}
+  .g h4{font-size:18px; font-weight:750}
+  .g p{color:var(--sub); font-size:14.5px; margin:9px 0 0}
+  .g,.step,.pc{transition:transform .2s ease, border-color .2s ease}
+  .g:hover,.step:hover,.pc:hover{transform:translateY(-4px)}
+  @media(max-width:860px){.grid{grid-template-columns:1fr 1fr}}
+  @media(max-width:560px){.grid{grid-template-columns:1fr}}
+
+  /* Ask My Library */
+  .ask-wrap{padding:52px 44px}
+  .ask-grid{display:grid; grid-template-columns:1fr 1fr; gap:48px; align-items:center; position:relative; z-index:1}
+  .ask-grid h3{font-size:clamp(30px,3.6vw,46px); font-weight:850; margin-top:18px}
+  .ask-grid p{color:var(--sub); font-size:17px; margin:16px 0 0; max-width:460px}
+  .ask-grid p b{color:#fff}
+  .ask-grid ul{list-style:none; margin:24px 0 0; padding:0; display:grid; gap:14px}
+  .ask-grid li{display:flex; gap:14px; align-items:center; font-size:15.5px; color:#eae4e0; font-weight:500}
+  .chat{background:rgba(255,255,255,.04); border:1px solid var(--line-2); border-radius:20px; padding:22px; backdrop-filter:blur(6px)}
+  .chat .q{display:flex; gap:13px; align-items:center; font-weight:700; font-size:15px; color:#fff}
+  .chat .qi{width:36px;height:36px;border-radius:10px; flex:none; background:linear-gradient(180deg,var(--coral),var(--orange)); color:#fff; display:grid; place-items:center; box-shadow:0 10px 22px -8px rgba(244,81,30,.9)}
+  .chat .qi svg{width:18px;height:18px}
+  .chat .a{margin-top:16px; background:rgba(255,255,255,.04); border:1px solid var(--line); border-radius:14px; padding:17px; font-size:14.5px; color:#d8d1cc; line-height:1.6}
+  .chat .src{display:flex; gap:10px; margin-top:16px; flex-wrap:wrap}
+  .chat .src span{font-size:13px; font-weight:700; color:#f0c3b1; background:var(--o-soft); border:1px solid var(--o-border); padding:9px 16px; border-radius:999px}
+  @media(max-width:860px){.ask-grid{grid-template-columns:1fr; gap:32px}.ask-wrap{padding:34px 22px}}
+
+  /* How it works */
+  .steps{display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:38px}
+  .step{padding:24px}
+  .step .n{width:44px;height:44px;border-radius:12px; display:grid; place-items:center; font-weight:900; font-size:18px; color:#fff; margin-bottom:15px; background:linear-gradient(180deg,var(--coral),var(--orange)); box-shadow:0 14px 28px -12px rgba(244,81,30,.8)}
+  .step h4{font-size:18.5px; font-weight:750}
+  .step p{color:var(--sub); font-size:14.5px; margin:9px 0 0}
+  @media(max-width:860px){.steps{grid-template-columns:1fr}}
+
+  /* Privacy */
+  .pcards{display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:38px}
+  .pc{padding:24px}
+  .pc .ic{width:46px;height:46px;border-radius:13px; display:grid; place-items:center; margin-bottom:15px; color:var(--coral); background:var(--o-soft); border:1px solid var(--o-border)}
+  .pc .ic svg{width:22px;height:22px}
+  .pc h4{font-size:17.5px; font-weight:750}
+  .pc p{color:var(--sub); font-size:14.5px; margin:9px 0 0}
+  @media(max-width:860px){.pcards{grid-template-columns:1fr}}
+
+  /* CTA */
+  .cta-sec{padding:40px 0 90px}
+  .cta{padding:70px 30px; text-align:center}
+  .cta .glow-c{position:absolute; inset:0; pointer-events:none; background:radial-gradient(620px 300px at 50% 120%, rgba(244,81,30,.5), transparent 60%), radial-gradient(500px 240px at 50% -10%, rgba(255,159,28,.28), transparent 60%)}
+  .cta h2{position:relative; z-index:1; font-size:clamp(34px,4.8vw,58px); font-weight:900; letter-spacing:-.035em}
+  .cta p{position:relative; z-index:1; color:var(--sub); font-size:18px; margin:16px auto 0; max-width:520px}
+  .cta .btn{position:relative; z-index:1; margin-top:28px}
+
+  footer{border-top:1px solid var(--line); padding:52px 0 34px; margin-top:0}
+  .foot-grid{display:flex; justify-content:space-between; gap:40px; flex-wrap:wrap}
+  .foot-brand{max-width:340px}
+  .foot-brand .brand{margin-bottom:14px}
+  .foot-brand p{font-size:14px; color:var(--muted)}
+  .socials{display:flex; flex-wrap:wrap; gap:10px; margin-top:18px}
+  .socials :is(a,span){width:40px;height:40px;border-radius:11px; display:grid; place-items:center; color:var(--sub); background:rgba(255,255,255,.04); border:1px solid var(--line); transition:transform .18s ease, color .18s, border-color .18s, background .18s}
+  .socials :is(a,span) svg{width:19px;height:19px}
+  .socials a:hover{color:#fff; transform:translateY(-3px); border-color:var(--o-border); background:var(--o-soft); box-shadow:0 10px 22px -10px rgba(244,81,30,.7)}
+  .foot-cols{display:flex; gap:64px; flex-wrap:wrap}
+  .foot-col h4{color:#fff; font-size:12px; text-transform:uppercase; letter-spacing:.07em; margin:0 0 14px}
+  .foot-col a{display:block; font-size:14px; color:var(--sub); margin-bottom:10px; transition:color .15s}
+  .foot-col a:hover{color:var(--orange)}
+  .foot-bottom{border-top:1px solid var(--line); margin-top:40px; padding-top:24px; display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; font-size:13px; color:var(--muted)}
+
+  .reveal{opacity:0; transform:translateY(22px); transition:opacity .7s ease, transform .7s ease}
+  .reveal.in{opacity:1; transform:none}
+
+  /* ---------- MOBILE ---------- */
+  @media(max-width:768px){
+    .wrap{padding:0 18px}
+    .sec{padding:56px 0}
+    .hero{padding:120px 0 60px}
+    .stage{padding:0}
+  }
+  @media(max-width:600px){
+    .nav-shell{top:10px; padding:0 12px}
+    .nav{height:50px; padding:0 6px 0 9px}
+    .brand{font-size:16px;gap:7px}.brand .mark{width:30px;height:30px;border-radius:8px}
+    .nav .btn-primary{padding:8px 13px; font-size:13px}
+    .hero{padding:104px 0 50px}
+    .hero .lede{font-size:16.5px}
+    .hero-actions{flex-direction:column; align-items:stretch; gap:11px; width:100%; max-width:340px}
+    .hero-actions .btn{width:100%}
+    .marq{margin-top:52px}
+    .grid,.steps,.pcards{gap:12px}
+    .g,.step,.pc,.panel{padding:20px}
+    .cta{padding:54px 22px}
+    .foot-grid{flex-direction:column; gap:28px}
+    .foot-cols{gap:36px}
+    .foot-bottom{flex-direction:column; gap:8px}
+    .org{grid-template-columns:1fr}
+  }
+  @media(max-width:380px){ .hero h1{font-size:40px} }
+  @media(prefers-reduced-motion:reduce){.reveal{opacity:1; transform:none; transition:none}.marq .track{animation:none}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<div class="nav-shell">
+  <nav class="nav">
+    <a class="brand" href="#top">
+      <img class="mark" src="/logo-mark.svg?v=20260813-13" width="44" height="44" alt="">
+      <span class="name">saveto<span class="tld">.me</span></span>
+    </a>
+    <div class="nav-links">
+      <a href="#search">Search</a><a href="#features">Features</a><a href="#ask">Ask</a><a href="/privacy/">Privacy</a>
+    </div>
+    <a class="btn btn-primary" href="/app">Open app
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+  </nav>
+</div>
+
+<!-- HERO -->
+<section class="hero" id="top">
+  <div class="wrap hero-inner">
+    <span class="eyebrow"><span class="dot"></span>AI-powered smart bookmarks</span>
+    <h1>Save anything.<span class="accent">Find everything.</span></h1>
+    <p class="lede">saveto.me is your AI-powered bookmarking assistant that automatically saves, organizes, and lets you access your favorite links from anywhere.</p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="/app">Open app
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      <a class="btn btn-ghost" href="#search">See how it works</a>
+    </div>
+    <div class="imports">
+      <span class="lbl">Imports from</span>
+      <span class="ch">Chrome</span><span class="ch">Safari</span><span class="ch">Firefox</span><span class="ch">Edge</span><span class="ch">Brave</span>
+    </div>
+  </div>
+
+  <div class="stage reveal">
+    <span class="halo"></span>
+    <div class="win" role="img" aria-label="saveto.me app preview">
+      <div class="win-top">
+        <div class="dots"><i></i><i></i><i></i></div>
+        <div class="win-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>Search, paste a URL, or ask…<span class="spark"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.9 5.6L20 9.5l-5.6 1.9L12 17l-1.9-5.6L4 9.5l5.6-1.9z"/></svg></span></div>
+      </div>
+      <div class="win-body">
+        <aside class="win-side">
+          <div class="h">Folders</div>
+          <div class="srow active"><svg class="ic" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3 6 7 .9-5 4.7 1.2 6.9L12 17l-6.2 3.4L7 13.6 2 8.9 9 8z"/></svg>Design<span class="ct">42</span></div>
+          <div class="srow"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Research<span class="ct">28</span></div>
+          <div class="srow"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>AI Tools<span class="ct">17</span></div>
+          <div class="h mt">Tags</div>
+          <div class="tagwrap"><span>#typography</span><span>#cloudflare</span><span>#semantic</span></div>
+        </aside>
+        <div class="win-main">
+          <div class="mh"><h5>Design</h5><span class="cnt">42 links</span></div>
+          <div class="rescard"><span class="fav" style="background:linear-gradient(140deg,var(--coral),var(--orange))">R</span><div><div class="ti">Refactoring UI — Layout &amp; spacing</div><div class="dm">refactoringui.com</div></div><span class="badge">#ui</span></div>
+          <div class="rescard"><span class="fav" style="background:linear-gradient(140deg,var(--amber),var(--deep))">V</span><div><div class="ti">Vectorize + Workers AI embeddings</div><div class="dm">developers.cloudflare.com</div></div><span class="badge">semantic</span></div>
+          <div class="rescard"><span class="fav" style="background:linear-gradient(140deg,var(--gold),var(--orange))">A</span><div><div class="ti">Arxiv — Retrieval-augmented answers</div><div class="dm">arxiv.org</div></div><span class="badge">#rag</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marq">
+  <div class="track">
+    <b>Chrome import</b><b>Safari</b><b>Firefox</b><b>Edge</b><b>Brave</b><b>Opera</b><b>Hybrid search</b><b>Semantic recall</b><b>Ask My Library</b><b>Duplicate detection</b><b>Link health</b><b>Private by default</b>
+    <b aria-hidden="true">Chrome import</b><b aria-hidden="true">Safari</b><b aria-hidden="true">Firefox</b><b aria-hidden="true">Edge</b><b aria-hidden="true">Brave</b><b aria-hidden="true">Opera</b><b aria-hidden="true">Hybrid search</b><b aria-hidden="true">Semantic recall</b><b aria-hidden="true">Ask My Library</b><b aria-hidden="true">Duplicate detection</b><b aria-hidden="true">Link health</b><b aria-hidden="true">Private by default</b>
+  </div>
+</div>
+
+<!-- SHOWCASE -->
+<section class="sec" id="search">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow"><span class="dot"></span>Built to find, not just store</span>
+      <h2>Search that reads your mind</h2>
+      <p>Keyword precision and semantic recall, fused into one ranked result — so you find it whether or not you remember the exact words.</p>
+    </div>
+
+    <div class="show reveal">
+      <div class="show-copy">
+        <span class="tag">Hybrid search</span>
+        <h3>By the words — or by the meaning</h3>
+        <p>Full-text and multilingual semantic similarity are blended into a single result set. Search “cinema” and get pages that say <i>kino</i> or <i>映画</i>. Want exact only? Keyword mode is one tap away.</p>
+        <ul>
+          <li><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></span>Cross-language recall, even offline</li>
+          <li><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></span>Searches title, notes, domain, folders &amp; tags</li>
+          <li><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></span>Learns from the results you open</li>
+        </ul>
+      </div>
+      <div class="show-media">
+        <div class="card panel"><span class="glow-tl"></span>
+          <div class="m-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>online cinema</div>
+          <div class="m-res">
+            <div class="m-hit"><div><div class="t">Kino.watch — streaming guide</div><div class="d">kino.watch</div></div><span class="b">semantic</span></div>
+            <div class="m-hit"><div><div class="t">Best film archives of 2026</div><div class="d">letterboxd.com</div></div><span class="b">keyword</span></div>
+            <div class="m-hit"><div><div class="t">映画データベース</div><div class="d">eiga.com</div></div><span class="b">semantic</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="show rev reveal">
+      <div class="show-copy">
+        <span class="tag">Effortless organization</span>
+        <h3>Folders that build themselves</h3>
+        <p>Save with nothing selected and saveto.me spins up a topical folder from the strongest tag or the domain. Folders you make yourself pin to the top — the automatic ones stay out of your way.</p>
+        <ul>
+          <li><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></span>Smart tags + a short description on every save</li>
+          <li><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></span>Drag a card into any folder to refile</li>
+          <li><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></span>Scales to 100k+ links, stays fast</li>
+        </ul>
+      </div>
+      <div class="show-media">
+        <div class="card panel"><span class="glow-tl"></span>
+          <div class="org">
+            <div class="fol"><div class="rowh"><svg class="ic" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3 6 7 .9-5 4.7 1.2 6.9L12 17l-6.2 3.4L7 13.6 2 8.9 9 8z"/></svg>Design<span class="ct">64</span></div><div class="tgs"><span>#ui</span><span>#type</span></div></div>
+            <div class="fol"><div class="rowh"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Development<span class="ct">96</span></div><div class="tgs"><span>#api</span><span>#docs</span></div></div>
+            <div class="fol"><div class="rowh"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M8 3v16"/></svg>Reading<span class="ct">42</span></div><div class="tgs"><span>#longread</span></div></div>
+            <div class="fol"><div class="rowh"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>AI Tools<span class="ct">31</span></div><div class="tgs"><span>#ai</span><span>#llm</span></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CAPABILITY GRID -->
+<section class="sec" id="features">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow"><span class="dot"></span>Everything your bookmarks need</span>
+      <h2>Powerful, quietly</h2>
+      <p>The essentials that keep a big collection clean, portable, and yours — without any fuss.</p>
+    </div>
+    <div class="grid">
+      <div class="card g reveal"><div class="ic"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.9 5.6L20 9.5l-5.6 1.9L12 17l-1.9-5.6L4 9.5l5.6-1.9z"/></svg></div><h4>Smart tags &amp; folders</h4><p>Every save gets weighted tags, a short description, and a topical folder — generated on-device, no manual filing.</p></div>
+      <div class="card g reveal"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg></div><h4>Duplicate &amp; link health</h4><p>Catches normalized-URL and same-content copies, and background scans flag dead links — without false alarms.</p></div>
+      <div class="card g reveal"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7l8-4 8 4-8 4-8-4z"/><path d="M4 12l8 4 8-4M4 17l8 4 8-4"/></svg></div><h4>Import &amp; export</h4><p>Drop a browser bookmarks file and folders become projects. Export any time as browser-ready HTML or full JSON.</p></div>
+      <div class="card g reveal"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg></div><h4>Lines &amp; Pinterest views</h4><p>Switch between a compact list and a grid masonry with website previews and short descriptions.</p></div>
+      <div class="card g reveal"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 20h8M12 18v2"/></svg></div><h4>Browser extension</h4><p>Save the active tab, a right-clicked link, or a selection — captured straight into your bookmarks.</p></div>
+      <div class="card g reveal"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg></div><h4>Sync or stay local</h4><p>Sign in to add per-bookmark sync across devices. No account? Everything still runs right in your browser.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ASK MY LIBRARY -->
+<section class="sec" id="ask">
+  <div class="wrap">
+    <div class="card ask-wrap reveal"><span class="glow-tl"></span>
+      <div class="ask-grid">
+        <div>
+          <span class="eyebrow"><span class="dot"></span>Ask My Library</span>
+          <h3>Ask your own knowledge</h3>
+          <p>Ask a question and get a grounded answer built <b>only</b> from your saved sources, with clickable citations. If nothing relevant is saved, it says so — instead of inventing a connection.</p>
+          <ul>
+            <li><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></span>Every answer cites the links it came from</li>
+            <li><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></span>Answers in the language you asked in</li>
+            <li><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></span>Grounded — never guesses beyond your bookmarks</li>
+          </ul>
+        </div>
+        <div class="chat">
+          <div class="q"><span class="qi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>What did I save about semantic search on Cloudflare?</div>
+          <div class="a">You saved a Cloudflare guide on generating multilingual embeddings with Workers AI and storing them per-user in Vectorize, plus a paper on retrieval-augmented answers. Together they explain how your search matches meaning across languages — not just keywords.</div>
+          <div class="src"><span>Workers AI — Docs</span><span>RAG, explained</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="sec" id="how">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="eyebrow"><span class="dot"></span>Three steps</span>
+      <h2>From link to bookmark</h2>
+      <p>No setup, no manual filing. Paste, and it's organized before you finish reading.</p>
+    </div>
+    <div class="steps">
+      <div class="card step reveal"><div class="n">1</div><h4>Paste anything</h4><p>Drop a URL in the bar — or capture from the browser extension. Even a text selection works.</p></div>
+      <div class="card step reveal"><div class="n">2</div><h4>It organizes itself</h4><p>saveto.me fetches the page, writes tags and a description, spots duplicates, and files it into the right folder.</p></div>
+      <div class="card step reveal"><div class="n">3</div><h4>Find it forever</h4><p>Search by keyword or meaning, or just ask. Everything stays private, and syncs when you sign in.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-sec" id="cta">
+  <div class="wrap">
+    <div class="card cta reveal"><span class="glow-c"></span>
+      <h2>Start your smart bookmarks</h2>
+      <p>Save any link and find it instantly — by keyword or by meaning. Private by default, and yours forever.</p>
+      <a class="btn btn-primary" href="/app">Open app
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <a class="brand" href="#top"><img class="mark" src="/logo-mark.svg?v=20260813-13" width="40" height="40" alt=""><span class="name">saveto<span class="tld">.me</span></span></a>
+        <p>AI-powered smart bookmarks. Save anything, find everything — private by default.</p>
+        <div class="socials">
+          <span role="img" aria-label="X" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.9 2H22l-7.3 8.3L23.2 22h-6.6l-5.2-6.8L5.5 22H2.4l7.8-8.9L1.2 2h6.8l4.7 6.2L18.9 2zm-2.3 18h1.8L7.5 3.9H5.6L16.6 20z"/></svg></span>
+          <span role="img" aria-label="Facebook" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 12a10 10 0 1 0-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.2c-1.2 0-1.6.8-1.6 1.6V12h2.7l-.4 2.9h-2.3v7A10 10 0 0 0 22 12z"/></svg></span>
+          <span role="img" aria-label="Instagram" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></span>
+          <span role="img" aria-label="LinkedIn" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9h4v12H3zM9 9h3.8v1.7h.1c.5-1 1.8-2 3.7-2 4 0 4.7 2.6 4.7 5.9V21h-4v-5.6c0-1.3 0-3-1.9-3s-2.1 1.4-2.1 2.9V21H9z"/></svg></span>
+          <span role="img" aria-label="YouTube" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M23 12s0-3.2-.4-4.7a2.5 2.5 0 0 0-1.8-1.8C19.3 5 12 5 12 5s-7.3 0-8.8.5A2.5 2.5 0 0 0 1.4 7.3C1 8.8 1 12 1 12s0 3.2.4 4.7a2.5 2.5 0 0 0 1.8 1.8C4.7 19 12 19 12 19s7.3 0 8.8-.5a2.5 2.5 0 0 0 1.8-1.8C23 15.2 23 12 23 12zM9.8 15.3V8.7l5.7 3.3z"/></svg></span>
+          <span role="img" aria-label="GitHub" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-3.2 19.5c.5.1.7-.2.7-.5v-1.7c-2.8.6-3.4-1.3-3.4-1.3-.5-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.6 2.4 1.1 3 .9.1-.7.4-1.1.6-1.4-2.2-.3-4.6-1.1-4.6-5 0-1.1.4-2 1-2.7-.1-.3-.4-1.3.1-2.7 0 0 .8-.3 2.7 1a9.4 9.4 0 0 1 5 0c1.9-1.3 2.7-1 2.7-1 .5 1.4.2 2.4.1 2.7.6.7 1 1.6 1 2.7 0 3.9-2.4 4.7-4.6 5 .4.3.7.9.7 1.9v2.8c0 .3.2.6.7.5A10 10 0 0 0 12 2z"/></svg></span>
+          <span role="img" aria-label="TikTok" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.5 3c.3 2.2 1.6 3.6 3.7 3.8v2.5c-1.3.1-2.5-.3-3.7-1v5.6c0 3.4-2.5 5.6-5.6 5.6A5.4 5.4 0 0 1 5.6 14c0-3.3 3-5.8 6.3-5.1v2.7a2.8 2.8 0 0 0-1-.2 2.7 2.7 0 1 0 2.7 2.7V3z"/></svg></span>
+          <span role="img" aria-label="Reddit" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 12a2.1 2.1 0 0 0-3.6-1.4 10.3 10.3 0 0 0-5.2-1.6l.9-4 2.8.6a1.5 1.5 0 1 0 .2-1.4l-3.4-.7a.5.5 0 0 0-.6.4l-1 4.7a10.4 10.4 0 0 0-5.3 1.6A2.1 2.1 0 1 0 3.6 14a4 4 0 0 0 0 .6c0 2.9 3.4 5.3 7.6 5.3s7.6-2.4 7.6-5.3a4 4 0 0 0 0-.6A2.1 2.1 0 0 0 22 12zM8.3 13.5a1.3 1.3 0 1 1 1.3 1.3 1.3 1.3 0 0 1-1.3-1.3zm7 3.3a4.8 4.8 0 0 1-3.3 1 4.8 4.8 0 0 1-3.3-1 .4.4 0 1 1 .6-.6 4 4 0 0 0 2.7.8 4 4 0 0 0 2.7-.8.4.4 0 1 1 .6.6zm-.4-2a1.3 1.3 0 1 1 1.3-1.3 1.3 1.3 0 0 1-1.3 1.3z"/></svg></span>
+          <a href="mailto:contact@beartimage.com" aria-label="Email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></a>
+        </div>
+      </div>
+      <div class="foot-cols">
+        <div class="foot-col"><h4>Product</h4><a href="#search">Search</a><a href="#features">Features</a><a href="#ask">Ask</a><a href="/privacy/">Privacy</a></div>
+        <div class="foot-col"><h4>Company</h4><a href="/about/">About</a><a href="/faq/">FAQ</a><a href="/contact/">Contact</a></div>
+        <div class="foot-col"><h4>Legal</h4><a href="/privacy/">Privacy Policy</a><a href="/terms/">Terms</a><a href="/cookies/">Cookies</a></div>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 saveto.me — AI-powered smart bookmarks</span>
+      <span>Built on Cloudflare · Local-first · Private by default</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const reveal = document.querySelectorAll('.reveal');
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries)=>{entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.12});
+    reveal.forEach(el=>io.observe(el));
+  } else {
+    reveal.forEach(el=>el.classList.add('in'));
+  }
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://saveto.me/#website","url":"https://saveto.me/","name":"saveto.me","description":"AI-powered smart bookmarks and a private Personal Internet Library.","publisher":{"@id":"https://saveto.me/#organization"}},{"@type":"Organization","@id":"https://saveto.me/#organization","name":"saveto.me","url":"https://saveto.me/","logo":{"@type":"ImageObject","url":"https://saveto.me/logo-mark.png"}},{"@type":"SoftwareApplication","@id":"https://saveto.me/#app","name":"saveto.me","url":"https://saveto.me/app","applicationCategory":"ProductivityApplication","operatingSystem":"Web","description":"AI-powered smart bookmarks with automatic organization, hybrid search, duplicate detection, and grounded answers from saved sources.","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}]}
+</script>
+</body>
+</html>

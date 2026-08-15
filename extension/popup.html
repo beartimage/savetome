@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Save to saveto.me</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <img src="icons/icon-32.png" width="28" height="28" alt="">
+    <div><strong>saveto.me</strong><span>Next-Gen AI Bookmark Manager</span></div>
+  </header>
+  <main>
+    <div class="page-card">
+      <div class="site-letter" id="siteLetter">S</div>
+      <div class="page-copy">
+        <div class="page-title" id="pageTitle">Loading current page…</div>
+        <div class="page-url" id="pageUrl"></div>
+      </div>
+    </div>
+    <button class="save" id="saveButton" disabled><span>✦</span> Save to my library</button>
+    <button class="open" id="openButton">Open saveto.me</button>
+    <p id="status" role="status">Use ⌘⇧S on Mac or Alt+Shift+S elsewhere to save instantly.</p>
+  </main>
+  <script src="popup.js"></script>
+</body>
+</html>

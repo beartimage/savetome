@@ -2,38 +2,372 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>saveto.me — Smart Bookmark Manager</title>
-  <meta name="theme-color" content="#171A2E">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%23A78BFA%22%2F%3E%3Cstop%20offset%3D%22.5%22%20stop-color%3D%22%237C5CFB%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%235B4BE0%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%229%22%20fill%3D%22url(%23g)%22%2F%3E%3Cpath%20d%3D%22M11%205.5h10a2.5%202.5%200%200%201%202.5%202.5v18.1c0%201.28-1.42%202.04-2.48%201.33L16%2024l-5.02%203.43C9.92%2028.15%208.5%2027.39%208.5%2026.1V8A2.5%202.5%200%200%201%2011%205.5z%22%20fill%3D%22%23ffffff%22%2F%3E%3Cpath%20d%3D%22M16%2010v6m0%200l-3-3m3%203l3-3%22%20fill%3D%22none%22%20stroke%3D%22%235B4BE0%22%20stroke-width%3D%222.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+  <title>saveto.me — Save Anything. Find Everything.</title>
+  <meta name="description" content="Not ordinary browser bookmarks. Import from Chrome, Safari, Firefox, or Edge and turn every saved page into an AI-organized, searchable smart bookmark.">
+  <meta name="robots" content="noindex,follow">
+  <meta name="googlebot" content="noindex,follow">
+  <meta name="theme-color" content="#212121">
+  <link rel="canonical" href="https://saveto.me/">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:site_name" content="saveto.me">
+  <meta property="og:title" content="saveto.me — Save Anything. Find Everything.">
+  <meta property="og:description" content="Import every browser bookmark. Get smart folders, automatic tags, hybrid search, duplicate detection, private sync, and Ask My Library.">
+  <meta property="og:url" content="https://saveto.me/">
+  <meta property="og:image" content="https://saveto.me/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="saveto.me personal internet library with smart folders, tags, and search">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="saveto.me — Save Anything. Find Everything.">
+  <meta name="twitter:description" content="Import, organize, search, and ask questions across everything you save online.">
+  <meta name="twitter:image" content="https://saveto.me/og-image.png">
+  <meta name="application-name" content="saveto.me">
+  <meta name="apple-mobile-web-app-title" content="saveto.me">
+  <meta name="format-detection" content="telephone=no">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png?v=20260813-13">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png?v=20260813-13">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png?v=20260813-13">
+  <link rel="manifest" href="/site.webmanifest">
+  <script>
+    (() => {
+      const current = new URL(window.location.href);
+      if (current.pathname === '/app' || current.searchParams.has('add') || current.searchParams.has('onboarding')) {
+        document.documentElement.classList.add('app-booting');
+      }
+    })();
+  </script>
+
+  <style id="landing-critical-theme">
+    /* Match the supplied dark landing surface before Vite applies the complete
+       layout, so a slow mobile connection cannot flash a different design. */
+    body.landing-active,
+    body.landing-active #landingPage,
+    body.landing-active #landingPage .sl-theme {
+      color: #FAFAFA !important;
+      background: #212121 !important;
+    }
+    body.landing-active #landingPage .sl-theme .brand,
+    body.landing-active #landingPage .sl-theme .brand .name {
+      color: #FAFAFA !important;
+    }
+    body.landing-active #landingPage .sl-theme .brand .tld {
+      color: #F4511E !important;
+    }
+    html.app-booting,
+    html.app-booting body {
+      background: #212121 !important;
+    }
+    html.app-booting body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: 2147483647;
+      background: #212121 url('/logo-mark.svg?v=20260813-13') center / 54px 54px no-repeat;
+    }
+  </style>
 
 </head>
-<body>
+<body class="landing-active">
+  <div id="landingPage" class="landing-page">
+    <div class="sl-theme">
+      <a class="skip-link" href="#landing-main">Skip to content</a>
+      <!-- NAV -->
+      <div class="nav-shell">
+        <nav class="nav">
+          <a class="brand" href="/">
+            <img class="mark" src="/logo-mark.svg?v=20260813-13" width="44" height="44" alt="">
+            <span class="name">saveto<span class="tld">.me</span></span>
+          </a>
+          <div class="nav-links">
+            <a href="#search">Search</a><a href="#features">Features</a><a href="#ask">Ask</a><a href="/privacy/">Privacy</a>
+          </div>
+          <a class="btn btn-primary" href="/app">Open app
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </nav>
+      </div>
+      
+      <main id="landing-main">
+      
+      <!-- HERO -->
+      <section class="hero" id="top">
+        <div class="wrap hero-inner">
+          <span class="eyebrow"><span class="dot"></span>AI-powered smart bookmarks</span>
+          <h1>Save anything.<span class="accent">Find everything.</span></h1>
+          <p class="lede">saveto.me is your AI-powered bookmarking assistant that automatically saves, organizes, and lets you access your favorite links from anywhere.</p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="/app">Open app
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+            <a class="btn btn-ghost" href="/app#import">Import bookmarks</a>
+          </div>
+          <div class="imports">
+            <span class="lbl">Imports from</span>
+            <span class="ch">Chrome</span><span class="ch">Safari</span><span class="ch">Firefox</span><span class="ch">Edge</span><span class="ch">Brave</span>
+          </div>
+        </div>
+      
+        <div class="stage reveal">
+          <span class="halo"></span>
+          <div class="win" role="img" aria-label="saveto.me app preview">
+            <div class="win-top">
+              <div class="dots"><i></i><i></i><i></i></div>
+              <div class="win-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>Search, paste a URL, or ask…<span class="spark"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.9 5.6L20 9.5l-5.6 1.9L12 17l-1.9-5.6L4 9.5l5.6-1.9z"/></svg></span></div>
+            </div>
+            <div class="win-body">
+              <div class="win-side">
+                <div class="h">Folders</div>
+                <div class="srow active"><svg class="ic" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3 6 7 .9-5 4.7 1.2 6.9L12 17l-6.2 3.4L7 13.6 2 8.9 9 8z"/></svg>Design<span class="ct">42</span></div>
+                <div class="srow"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Research<span class="ct">28</span></div>
+                <div class="srow"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>AI Tools<span class="ct">17</span></div>
+                <div class="h mt">Tags</div>
+                <div class="tagwrap"><span>#typography</span><span>#cloudflare</span><span>#semantic</span></div>
+              </div>
+              <div class="win-main">
+                <div class="mh"><span class="mh-t">Design</span><span class="cnt">42 links</span></div>
+                <div class="rescard"><span class="fav" style="background:linear-gradient(140deg,var(--coral),var(--orange))">R</span><div><div class="ti">Refactoring UI — Layout &amp; spacing</div><div class="dm">refactoringui.com</div></div><span class="badge">#ui</span></div>
+                <div class="rescard"><span class="fav" style="background:linear-gradient(140deg,var(--amber),var(--deep))">V</span><div><div class="ti">Vectorize + Workers AI embeddings</div><div class="dm">developers.cloudflare.com</div></div><span class="badge">semantic</span></div>
+                <div class="rescard"><span class="fav" style="background:linear-gradient(140deg,var(--gold),var(--orange))">A</span><div><div class="ti">Arxiv — Retrieval-augmented answers</div><div class="dm">arxiv.org</div></div><span class="badge">#rag</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- MARQUEE -->
+      <div class="marq">
+        <div class="track">
+          <b>Chrome import</b><b>Safari</b><b>Firefox</b><b>Edge</b><b>Brave</b><b>Opera</b><b>Hybrid search</b><b>Semantic recall</b><b>Ask My Library</b><b>Duplicate detection</b><b>Link health</b><b>Private by default</b>
+          <b aria-hidden="true">Chrome import</b><b aria-hidden="true">Safari</b><b aria-hidden="true">Firefox</b><b aria-hidden="true">Edge</b><b aria-hidden="true">Brave</b><b aria-hidden="true">Opera</b><b aria-hidden="true">Hybrid search</b><b aria-hidden="true">Semantic recall</b><b aria-hidden="true">Ask My Library</b><b aria-hidden="true">Duplicate detection</b><b aria-hidden="true">Link health</b><b aria-hidden="true">Private by default</b>
+        </div>
+      </div>
+      
+      <!-- SHOWCASE -->
+      <section class="sec" id="search">
+        <div class="wrap">
+          <div class="sec-head reveal">
+            <span class="eyebrow"><span class="dot"></span>Built to find, not just store</span>
+            <h2>Search that reads your mind</h2>
+            <p>Keyword precision and semantic recall, fused into one ranked result — so you find it whether or not you remember the exact words.</p>
+          </div>
+      
+          <div class="show reveal">
+            <div class="show-copy">
+              <span class="tag">Hybrid search</span>
+              <h3>By the words — or by the meaning</h3>
+              <p>Full-text and multilingual semantic similarity are blended into a single result set. Search “cinema” and get pages that say <i>kino</i> or <i>映画</i>. Want exact only? Keyword mode is one tap away.</p>
+              <ul>
+                <li><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></span>Cross-language recall across your library</li>
+                <li><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></span>Searches title, notes, domain, folders &amp; tags</li>
+                <li><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></span>Learns from the results you open</li>
+              </ul>
+            </div>
+            <div class="show-media">
+              <div class="card panel"><span class="glow-tl"></span>
+                <div class="m-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>online cinema</div>
+                <div class="m-res">
+                  <div class="m-hit"><div><div class="t">Kino.watch — streaming guide</div><div class="d">kino.watch</div></div><span class="b">semantic</span></div>
+                  <div class="m-hit"><div><div class="t">Best film archives of 2026</div><div class="d">letterboxd.com</div></div><span class="b">keyword</span></div>
+                  <div class="m-hit"><div><div class="t">映画データベース</div><div class="d">eiga.com</div></div><span class="b">semantic</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+      
+          <div class="show rev reveal">
+            <div class="show-copy">
+              <span class="tag">Effortless organization</span>
+              <h3>Folders that build themselves</h3>
+              <p>Save with nothing selected and saveto.me spins up a topical folder from the strongest tag or the domain. Folders you make yourself pin to the top — the automatic ones stay out of your way.</p>
+              <ul>
+                <li><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></span>Smart tags + a short description on every save</li>
+                <li><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></span>Drag a card into any folder to refile</li>
+                <li><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></span>Designed to stay clear as your library grows</li>
+              </ul>
+            </div>
+            <div class="show-media">
+              <div class="card panel"><span class="glow-tl"></span>
+                <div class="org">
+                  <div class="fol"><div class="rowh"><svg class="ic" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3 6 7 .9-5 4.7 1.2 6.9L12 17l-6.2 3.4L7 13.6 2 8.9 9 8z"/></svg>Design<span class="ct">64</span></div><div class="tgs"><span>#ui</span><span>#type</span></div></div>
+                  <div class="fol"><div class="rowh"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>Development<span class="ct">96</span></div><div class="tgs"><span>#api</span><span>#docs</span></div></div>
+                  <div class="fol"><div class="rowh"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M8 3v16"/></svg>Reading<span class="ct">42</span></div><div class="tgs"><span>#longread</span></div></div>
+                  <div class="fol"><div class="rowh"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>AI Tools<span class="ct">31</span></div><div class="tgs"><span>#ai</span><span>#llm</span></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- CAPABILITY GRID -->
+      <section class="sec" id="features">
+        <div class="wrap">
+          <div class="sec-head reveal">
+            <span class="eyebrow"><span class="dot"></span>Everything your bookmarks need</span>
+            <h2>Powerful, quietly</h2>
+            <p>The essentials that keep a big collection clean, portable, and yours — without any fuss.</p>
+          </div>
+          <div class="grid">
+            <div class="card g reveal"><div class="ic"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.9 5.6L20 9.5l-5.6 1.9L12 17l-1.9-5.6L4 9.5l5.6-1.9z"/></svg></div><h4>Smart tags &amp; folders</h4><p>Every save gets weighted tags, a short description, and a topical folder — generated automatically, with no manual filing.</p></div>
+            <div class="card g reveal"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg></div><h4>Duplicate &amp; link health</h4><p>Catches normalized-URL and same-content copies, and background scans identify confirmed dead links with conservative status checks.</p></div>
+            <div class="card g reveal"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7l8-4 8 4-8 4-8-4z"/><path d="M4 12l8 4 8-4M4 17l8 4 8-4"/></svg></div><h4>Import &amp; export</h4><p>Drop a browser bookmarks file and folders become projects. Export any time as browser-ready HTML or full JSON.</p></div>
+            <div class="card g reveal"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg></div><h4>Lines &amp; Pinterest views</h4><p>Switch between a compact list and a grid masonry with website previews and short descriptions.</p></div>
+            <div class="card g reveal"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 20h8M12 18v2"/></svg></div><h4>Browser extension</h4><p>Save the active tab, a right-clicked link, or a selection — captured straight into your bookmarks.</p></div>
+            <div class="card g reveal"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg></div><h4>Sync or stay local</h4><p>Sign in to add per-bookmark sync across devices. No account? Everything still runs right in your browser.</p></div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- ASK MY LIBRARY -->
+      <section class="sec" id="ask">
+        <div class="wrap">
+          <div class="card ask-wrap reveal"><span class="glow-tl"></span>
+            <div class="ask-grid">
+              <div>
+                <span class="eyebrow"><span class="dot"></span>Ask My Library</span>
+                <h3>Ask your own knowledge</h3>
+                <p>Ask a question and get a grounded answer built <b>only</b> from your saved sources, with clickable citations. If nothing relevant is saved, it says so — instead of inventing a connection.</p>
+                <ul>
+                  <li><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></span>Every answer cites the links it came from</li>
+                  <li><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></span>Answers in the language you asked in</li>
+                  <li><span class="check"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg></span>Grounded — never guesses beyond your bookmarks</li>
+                </ul>
+              </div>
+              <div class="chat">
+                <div class="q"><span class="qi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>What did I save about semantic search on Cloudflare?</div>
+                <div class="a">You saved a Cloudflare guide on generating multilingual embeddings with Workers AI and storing them per-user in Vectorize, plus a paper on retrieval-augmented answers. Together they explain how your search matches meaning across languages — not just keywords.</div>
+                <div class="src"><span>Workers AI — Docs</span><span>RAG, explained</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- HOW IT WORKS -->
+      <section class="sec" id="how">
+        <div class="wrap">
+          <div class="sec-head reveal">
+            <span class="eyebrow"><span class="dot"></span>Three steps</span>
+            <h2>From link to bookmark</h2>
+            <p>No setup, no manual filing. Paste, and it's organized before you finish reading.</p>
+          </div>
+          <div class="steps">
+            <div class="card step reveal"><div class="n">1</div><h4>Paste anything</h4><p>Drop a URL in the bar — or capture from the browser extension. Even a text selection works.</p></div>
+            <div class="card step reveal"><div class="n">2</div><h4>It organizes itself</h4><p>saveto.me fetches the page, writes tags and a description, spots duplicates, and files it into the right folder.</p></div>
+            <div class="card step reveal"><div class="n">3</div><h4>Find it forever</h4><p>Search by keyword or meaning, or just ask. Everything stays private, and syncs when you sign in.</p></div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- EXTENSIONS -->
+      <section class="sec" id="extensions">
+        <div class="wrap">
+          <div class="sec-head reveal"><span class="eyebrow"><span class="dot"></span>Browser extensions</span><h2>Save without breaking your flow</h2><p>Capture the current page directly from your browser toolbar.</p></div>
+          <div class="card extension-card reveal"><div class="extension-links">
+            <a href="/extensions/saveto-me-chrome-edge-brave-opera.zip" download>Chrome · Edge · Brave · Opera ↓</a>
+            <a href="https://addons.mozilla.org/addon/saveto-me-smart-bookmarks/" target="_blank" rel="noopener noreferrer">Firefox — Install from Mozilla Add-ons ↗</a>
+            <a href="/extensions/saveto-me-safari-web-extension-source.zip" download>Safari source ↓</a>
+          </div></div>
+        </div>
+      </section>
+      
+      <!-- CTA -->
+      <section class="cta-sec" id="cta">
+        <div class="wrap">
+          <div class="card cta reveal"><span class="glow-c"></span>
+            <h2>Start your smart bookmarks</h2>
+            <p>Save any link and find it instantly — by keyword or by meaning. Private by default, and yours forever.</p>
+            <a class="btn btn-primary" href="/app">Open app
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          </div>
+        </div>
+      </section>
+      
+      </main>
+      
+      <!-- FOOTER -->
+      <footer>
+        <div class="wrap">
+          <div class="foot-grid">
+            <div class="foot-brand">
+              <a class="brand" href="/"><img class="mark" src="/logo-mark.svg?v=20260813-13" width="40" height="40" alt=""><span class="name">saveto<span class="tld">.me</span></span></a>
+              <p>AI-powered smart bookmarks. Save anything, find everything — private by default.</p>
+              <div class="socials" role="group" aria-label="Share saveto.me">
+                <a href="https://twitter.com/intent/tweet?text=Save%20anything.%20Find%20everything.&amp;url=https%3A%2F%2Fsaveto.me%2F" target="_blank" rel="noopener noreferrer" aria-label="Share saveto.me on X" title="Share on X"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.9 2H22l-7.3 8.3L23.2 22h-6.6l-5.2-6.8L5.5 22H2.4l7.8-8.9L1.2 2h6.8l4.7 6.2L18.9 2zm-2.3 18h1.8L7.5 3.9H5.6L16.6 20z"/></svg></a>
+                <a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fsaveto.me%2F" target="_blank" rel="noopener noreferrer" aria-label="Share saveto.me on Facebook" title="Share on Facebook"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M22 12a10 10 0 1 0-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.2c-1.2 0-1.6.8-1.6 1.6V12h2.7l-.4 2.9h-2.3v7A10 10 0 0 0 22 12z"/></svg></a>
+                <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fsaveto.me%2F" target="_blank" rel="noopener noreferrer" aria-label="Share saveto.me on LinkedIn" title="Share on LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9h4v12H3zM9 9h3.8v1.7h.1c.5-1 1.8-2 3.7-2 4 0 4.7 2.6 4.7 5.9V21h-4v-5.6c0-1.3 0-3-1.9-3s-2.1 1.4-2.1 2.9V21H9z"/></svg></a>
+                <a href="https://www.reddit.com/submit?url=https%3A%2F%2Fsaveto.me%2F&amp;title=Save%20anything.%20Find%20everything." target="_blank" rel="noopener noreferrer" aria-label="Share saveto.me on Reddit" title="Share on Reddit"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M22 12a2.1 2.1 0 0 0-3.6-1.4 10.3 10.3 0 0 0-5.2-1.6l.9-4 2.8.6a1.5 1.5 0 1 0 .2-1.4l-3.4-.7a.5.5 0 0 0-.6.4l-1 4.7a10.4 10.4 0 0 0-5.3 1.6A2.1 2.1 0 1 0 3.6 14a4 4 0 0 0 0 .6c0 2.9 3.4 5.3 7.6 5.3s7.6-2.4 7.6-5.3a4 4 0 0 0 0-.6A2.1 2.1 0 0 0 22 12zM8.3 13.5a1.3 1.3 0 1 1 1.3 1.3 1.3 1.3 0 0 1-1.3-1.3zm7 3.3a4.8 4.8 0 0 1-3.3 1 4.8 4.8 0 0 1-3.3-1 .4.4 0 1 1 .6-.6 4 4 0 0 0 2.7.8 4 4 0 0 0 2.7-.8.4.4 0 1 1 .6.6zm-.4-2a1.3 1.3 0 1 1 1.3-1.3 1.3 1.3 0 0 1-1.3 1.3z"/></svg></a>
+                <a href="https://wa.me/?text=Save%20anything.%20Find%20everything.%20https%3A%2F%2Fsaveto.me%2F" target="_blank" rel="noopener noreferrer" aria-label="Share saveto.me on WhatsApp" title="Share on WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.04 2a9.84 9.84 0 0 0-8.48 14.82L2 22l5.31-1.5A9.95 9.95 0 1 0 12.04 2zm0 17.95a8.05 8.05 0 0 1-4.1-1.12l-.3-.18-3.15.89.91-3.07-.2-.32a8.09 8.09 0 1 1 6.84 3.8zm4.44-6.06c-.24-.12-1.44-.71-1.66-.79-.22-.08-.38-.12-.54.12-.16.24-.62.79-.76.95-.14.16-.28.18-.52.06-.24-.12-1.02-.38-1.94-1.2-.72-.64-1.2-1.43-1.34-1.67-.14-.24-.02-.37.1-.49.11-.11.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.3-.74-1.78-.2-.47-.4-.4-.54-.41h-.46c-.16 0-.42.06-.64.3-.22.24-.84.82-.84 2s.86 2.32.98 2.48c.12.16 1.69 2.58 4.1 3.62.57.25 1.02.4 1.37.51.58.18 1.1.16 1.51.1.46-.07 1.44-.59 1.64-1.16.2-.57.2-1.06.14-1.16-.06-.1-.22-.16-.46-.28z"/></svg></a>
+                <a href="https://t.me/share/url?url=https%3A%2F%2Fsaveto.me%2F&amp;text=Save%20anything.%20Find%20everything." target="_blank" rel="noopener noreferrer" aria-label="Share saveto.me on Telegram" title="Share on Telegram"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.7 3.3 18.5 20c-.24 1.18-.87 1.47-1.77.92l-4.88-3.6-2.36 2.27c-.26.26-.48.48-.98.48l.35-4.97 9.05-8.18c.39-.35-.09-.55-.61-.2L6.11 13.77 1.3 12.26c-1.05-.33-1.07-1.05.22-1.56L20.3 3.46c.87-.33 1.63.2 1.4-.16z"/></svg></a>
+                <a href="mailto:contact@beartimage.com?subject=saveto.me" aria-label="Email contact@beartimage.com" title="Email saveto.me"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></a>
+              </div>
+            </div>
+            <div class="foot-cols">
+              <div class="foot-col"><h4>Product</h4><a href="#search">Search</a><a href="#features">Features</a><a href="#ask">Ask</a><a href="/privacy/">Privacy</a></div>
+              <div class="foot-col"><h4>Company</h4><a href="/about/">About</a><a href="/faq/">FAQ</a><a href="/contact/">Contact</a></div>
+              <div class="foot-col"><h4>Legal</h4><a href="/privacy/">Privacy Policy</a><a href="/terms/">Terms</a><a href="/cookies/">Cookies</a></div>
+            </div>
+          </div>
+          <div class="foot-bottom">
+            <span>© 2026 saveto.me — AI-powered smart bookmarks</span>
+            <span>Built on Cloudflare · Local-first · Private by default</span>
+          </div>
+        </div>
+      </footer>
+    </div>
+
+
+    <div class="landing-auth-overlay" id="landingAuthOverlay" aria-hidden="true" inert>
+      <div class="landing-auth-card" role="dialog" aria-modal="true" aria-labelledby="landingAuthTitle" aria-describedby="landingAuthDescription">
+        <div class="landing-auth-aside" aria-hidden="true">
+          <div class="landing-auth-brand"><img src="/logo-mark.png?v=20260813-13" width="28" height="28" alt=""><strong>saveto.me</strong></div>
+          <p>Save anything.<br>Find everything.</p>
+          <small>AI-powered smart bookmarks</small>
+        </div>
+        <div class="landing-auth-main">
+          <button class="landing-auth-close" type="button" aria-label="Close sign in">×</button>
+          <div class="section-kicker">YOUR PRIVATE LIBRARY</div>
+          <h2 id="landingAuthTitle">Sign in to saveto.me</h2>
+          <p id="landingAuthDescription">Keep every saved page organized, searchable and available on all your devices.</p>
+          <a class="landing-google-btn" href="/api/auth/google/login?onboarding=1">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0 0 12 23z"/><path fill="#FBBC05" d="M5.84 14.1a6.6 6.6 0 0 1 0-4.2V7.06H2.18a11 11 0 0 0 0 9.88l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1A11 11 0 0 0 2.18 7.06l3.66 2.84C6.71 7.3 9.14 5.38 12 5.38z"/></svg>
+            Continue with Google
+          </a>
+          <div class="landing-auth-benefits" aria-label="Account benefits"><span>Private by default</span><span>Cross-device sync</span><span>AI search &amp; Ask</span></div>
+          <p class="landing-auth-note"><strong>Next:</strong> import bookmarks from Chrome, Safari, Firefox, Edge, Brave or Opera.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="appShell" class="app-shell">
+  <a class="skip-link" href="#main-content">Skip to main content</a>
 
   <!-- Sidebar -->
-  <aside>
+  <aside id="libraryDrawer" aria-label="Library navigation" tabindex="-1">
     <div class="sidebar-resize" id="sidebarResize" title="Drag to resize"></div>
     <div class="brand">
-      <div class="brand-mark">
-        <svg viewBox="0 0 32 32" fill="none"><path d="M11 5.5h10a2.5 2.5 0 0 1 2.5 2.5v18.1c0 1.28-1.42 2.04-2.48 1.33L16 24l-5.02 3.43C9.92 28.15 8.5 27.39 8.5 26.1V8A2.5 2.5 0 0 1 11 5.5z" fill="#fff"/><path d="M16 10v6m0 0l-3-3m3 3l3-3" stroke="#5B4BE0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div class="brand-identity" aria-label="saveto.me">
+        <div class="brand-mark" aria-hidden="true">
+          <img src="/logo-mark.png?v=20260813-13" width="30" height="30" alt="">
+        </div>
+        <div class="brand-text">
+          <span class="brand-name"><span>saveto</span><span class="brand-domain">.me</span></span>
+        </div>
       </div>
-      <div class="brand-text">
-        <span class="brand-name">saveto.me</span>
-        <span class="brand-sub">private</span>
-      </div>
-      <button class="brand-chev" id="sidebarToggle" onclick="toggleSidebar()" title="Collapse sidebar" aria-label="Collapse sidebar">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+      <button class="brand-chev" id="sidebarToggle" onclick="toggleSidebar()" title="Collapse sidebar" aria-label="Collapse sidebar" aria-controls="libraryDrawer" aria-expanded="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4" width="17" height="16" rx="3"/><path d="M9 4v16"/></svg>
       </button>
     </div>
 
     <div class="nav-scroll">
       <div class="nav-section acc" data-acc="library">
-        <div class="section-header acc-header" onclick="toggleSection('library')">
-          <span class="acc-caret"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>
+        <div class="section-header acc-header" role="button" tabindex="0" aria-expanded="true" onclick="toggleSection('library')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleSection('library')}">
+          <span class="section-chevron" aria-hidden="true">›</span>
           <span class="section-title">Library</span>
         </div>
         <div class="nav-section-body">
-          <div class="nav-item active" id="nav-all" onclick="showAll()"
+          <div class="nav-item active" id="nav-all" role="button" tabindex="0" title="All Links" onclick="showAll()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showAll()}"
                ondragover="rootDragOver(event,this)"
                ondragleave="this.classList.remove('drag-over');"
                ondrop="rootDrop(event,this)">
@@ -41,12 +375,12 @@
             <span class="nav-label">All Links</span>
             <span class="badge" id="count-all">0</span>
           </div>
-          <div class="nav-item" id="nav-pinned" onclick="showPinned()">
+          <div class="nav-item" id="nav-pinned" role="button" tabindex="0" title="Pinned Links" onclick="showPinned()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showPinned()}">
             <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h6l-1 6 3 3v2h-5v5l-1 1-1-1v-5H4v-2l3-3z"/></svg></span>
             <span class="nav-label">Pinned Links</span>
             <span class="badge" id="count-pinned">0</span>
           </div>
-          <div class="nav-item" id="nav-recent" onclick="showRecent()">
+          <div class="nav-item" id="nav-recent" role="button" tabindex="0" title="Recently Added" onclick="showRecent()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();showRecent()}">
             <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span>
             <span class="nav-label">Recently Added</span>
             <span class="badge" id="count-recent">0</span>
@@ -55,8 +389,8 @@
       </div>
 
       <div class="nav-section acc" data-acc="favourites">
-        <div class="section-header acc-header" onclick="toggleSection('favourites')">
-          <span class="acc-caret"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>
+        <div class="section-header acc-header" role="button" tabindex="0" aria-expanded="true" onclick="toggleSection('favourites')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleSection('favourites')}">
+          <span class="section-chevron" aria-hidden="true">›</span>
           <span class="section-title">Favorites</span>
         </div>
         <div class="nav-section-body">
@@ -65,8 +399,8 @@
       </div>
 
       <div class="nav-section acc" data-acc="projects">
-        <div class="section-header acc-header" onclick="toggleSection('projects')">
-          <span class="acc-caret"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>
+        <div class="section-header acc-header" role="button" tabindex="0" aria-expanded="true" onclick="toggleSection('projects')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleSection('projects')}">
+          <span class="section-chevron" aria-hidden="true">›</span>
           <span class="section-title">Folders</span>
         </div>
         <div class="nav-section-body">
@@ -75,8 +409,8 @@
       </div>
 
       <div class="nav-section acc" data-acc="tags">
-        <div class="section-header acc-header" onclick="toggleSection('tags')">
-          <span class="acc-caret"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></span>
+        <div class="section-header acc-header" role="button" tabindex="0" aria-expanded="true" onclick="toggleSection('tags')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleSection('tags')}">
+          <span class="section-chevron" aria-hidden="true">›</span>
           <span class="section-title">Tags</span>
         </div>
         <div class="nav-section-body">
@@ -86,7 +420,7 @@
     </div>
 
     <div class="sidebar-footer">
-      <div class="nav-item" onclick="addNewProject()">
+      <div class="nav-item" role="button" tabindex="0" onclick="addNewProject()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();addNewProject()}">
         <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></span>
         <span class="nav-label">Add folder</span>
       </div>
@@ -101,12 +435,12 @@
   </aside>
 
   <!-- Mobile drawer backdrop -->
-  <div class="nav-backdrop" id="navBackdrop" onclick="closeNav()"></div>
+  <div class="nav-backdrop" id="navBackdrop" onclick="closeNav()" aria-hidden="true"></div>
 
   <!-- Main Workspace -->
-  <main>
+  <main id="main-content" tabindex="-1">
     <header>
-      <button class="nav-toggle" id="navToggle" onclick="toggleNav()" title="Menu" aria-label="Open menu">
+      <button class="nav-toggle" id="navToggle" onclick="toggleNav()" title="Menu" aria-label="Open library navigation" aria-controls="libraryDrawer" aria-expanded="false">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
       </button>
       <div class="nav-hist">
@@ -123,10 +457,17 @@
           type="text"
           id="searchInput"
           class="search-input"
-          placeholder="Paste a URL to save, or search links & folders…"
+          aria-label="Smart search: find links, save a URL, or ask your library"
+          placeholder="Search, paste a URL, or ask…"
           onkeydown="handleInput(event)"
         />
+        <button class="search-mode-btn active" id="searchModeBtn" onclick="toggleSearchMode()" title="Hybrid search: keywords + meaning" aria-label="Toggle hybrid search" aria-pressed="true">✦</button>
         <button class="search-clear" id="searchClear" onclick="clearMainSearch()" title="Clear" aria-label="Clear">×</button>
+        <div class="smart-search-actions" id="smartSearchActions" role="group" aria-label="Smart search actions">
+          <button type="button" data-smart-action="search" onclick="runSmartSearchAction('search')"><span aria-hidden="true">⌕</span><b>Search</b><small>Find by words or meaning</small><kbd>Enter</kbd></button>
+          <button type="button" data-smart-action="save" onclick="runSmartSearchAction('save')"><span aria-hidden="true">＋</span><b>Save</b><small>Paste a website address</small></button>
+          <button type="button" data-smart-action="ask" onclick="runSmartSearchAction('ask')"><span aria-hidden="true">✦</span><b>Ask</b><small>Answer from your library</small></button>
+        </div>
       </div>
 
       <div class="controls-group">
@@ -154,30 +495,40 @@
           </button>
         </div>
 
-        <!-- Overflow menu: Health Checker / All Settings / Theme Switcher -->
+        <!-- Overflow menu: All Settings / Theme Switcher -->
         <div class="header-menu" id="headerMenu">
-          <button class="settings-btn" id="btnMenu" onclick="toggleHeaderMenu(event)" title="Menu" aria-haspopup="true" aria-expanded="false">
-            <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
+          <button class="settings-btn" id="btnMenu" onclick="openHeaderAccountAction()" title="Sign in or open settings" aria-label="Sign in or open settings" aria-haspopup="dialog" aria-expanded="false">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06-2.83 2.83-.06-.06a1.65 1.65 0 0 0-2.82 1.18V21h-4v-.17A1.65 1.65 0 0 0 7.1 19.65l-.06.06-2.83-2.83.06-.06A1.65 1.65 0 0 0 3.09 14H3v-4h.09A1.65 1.65 0 0 0 4.27 7.18l-.06-.06 2.83-2.83.06.06A1.65 1.65 0 0 0 10 3.17V3h4v.17a1.65 1.65 0 0 0 2.9 1.18l.06-.06 2.83 2.83-.06.06A1.65 1.65 0 0 0 20.91 10H21v4h-.09A1.65 1.65 0 0 0 19.4 15z"/></svg>
           </button>
           <div class="header-menu-dropdown" id="headerMenuDropdown" role="menu">
-            <button class="hmenu-item" role="menuitem" onclick="closeHeaderMenu(); openHealth();">
-              <span class="hmenu-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg></span>
-              Health Checker
+            <button class="hmenu-item hmenu-mobile-ask" role="menuitem" onclick="closeHeaderMenu(); openLibraryAsk();">
+              <span class="hmenu-ic" aria-hidden="true">✦</span>
+              Ask My Library
             </button>
+            <button class="hmenu-item hmenu-mobile-view" role="menuitem" onclick="closeHeaderMenu(); setView('lines');">
+              <span class="hmenu-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 6h14M5 12h14M5 18h14"/></svg></span>
+              Compact list
+            </button>
+            <button class="hmenu-item hmenu-mobile-view" role="menuitem" onclick="closeHeaderMenu(); setView('pinterest');">
+              <span class="hmenu-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg></span>
+              Pinterest view
+            </button>
+            <div class="hmenu-mobile-sort-wrap">
+              <label for="mobileSortSelect"><span aria-hidden="true">⇅</span> Sort links</label>
+              <select id="mobileSortSelect" aria-label="Sort links" onchange="pickSort(this.value)">
+                <option value="newest">Newest first</option>
+                <option value="oldest">Oldest first</option>
+                <option value="title">Title A–Z</option>
+                <option value="domain">Domain</option>
+                <option value="custom">My order</option>
+              </select>
+            </div>
+            <div class="hmenu-sep hmenu-mobile-sort-sep"></div>
+            <div class="hmenu-sep hmenu-mobile-view"></div>
             <button class="hmenu-item" role="menuitem" onclick="closeHeaderMenu(); openSettings();">
               <span class="hmenu-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
               All Settings
             </button>
-            <div class="hmenu-sep"></div>
-            <div class="hmenu-label">Theme</div>
-            <div class="hmenu-themes" id="themeSwatches" role="group" aria-label="Theme">
-              <button class="theme-swatch sw-light" data-theme="light" onclick="setTheme('light')" title="Light" aria-label="Light theme"></button>
-              <button class="theme-swatch sw-dark"  data-theme="dark"  onclick="setTheme('dark')"  title="Dark"  aria-label="Dark theme"></button>
-              <button class="theme-swatch sw-green" data-theme="green" onclick="setTheme('green')" title="Green" aria-label="Green theme"></button>
-              <button class="theme-swatch sw-red"   data-theme="red"   onclick="setTheme('red')"   title="Red"   aria-label="Red theme"></button>
-              <button class="theme-swatch sw-black" data-theme="black" onclick="setTheme('black')" title="Black" aria-label="Black theme"></button>
-              <button class="theme-swatch sw-gold"  data-theme="gold"  onclick="setTheme('gold')"  title="Gold"  aria-label="Gold theme"></button>
-            </div>
           </div>
         </div>
       </div>
@@ -188,6 +539,30 @@
       <div class="view-list mode-compact" id="linkList"></div>
     </div>
   </main>
+
+  <!-- Native-feeling mobile dock: the five primary actions stay thumb-reachable. -->
+  <nav class="mobile-tabbar" aria-label="Mobile navigation">
+    <button class="mobile-tab active" id="mobileLibraryToggle" type="button" onclick="openNav()" aria-label="Open library navigation" aria-controls="libraryDrawer" aria-expanded="false" aria-current="page">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H19a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H6.5A2.5 2.5 0 0 1 4 17.5z"/><path d="M4 6h16M8 10h8"/></svg>
+      <span>Library</span>
+    </button>
+    <button class="mobile-tab" id="mobileSearchTab" type="button" onclick="focusLibrarySearch('search')" aria-label="Search library">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+      <span>Search</span>
+    </button>
+    <button class="mobile-tab mobile-tab-save" id="mobileSaveTab" type="button" onclick="openSaveLink()" aria-label="Save a new link" aria-haspopup="dialog" aria-controls="saveLinkOverlay" aria-expanded="false">
+      <span class="mobile-save-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
+      <span>Save</span>
+    </button>
+    <button class="mobile-tab" id="mobileAskTab" type="button" onclick="openLibraryAsk()" aria-label="Ask My Library" aria-haspopup="dialog" aria-controls="libraryAskOverlay" aria-expanded="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 1.25 4.1L17 9l-3.75 1.9L12 15l-1.25-4.1L7 9l3.75-1.9z"/><path d="m18.5 14 .7 2.3 2.3.7-2.3.7-.7 2.3-.7-2.3-2.3-.7 2.3-.7z"/></svg>
+      <span>Ask</span>
+    </button>
+    <button class="mobile-tab" id="mobileSettingsTab" type="button" onclick="openSettings()" aria-label="Open settings" aria-haspopup="dialog" aria-controls="settingsOverlay" aria-expanded="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06-2.83 2.83-.06-.06a1.65 1.65 0 0 0-2.82 1.18V21h-4v-.17A1.65 1.65 0 0 0 7.1 19.65l-.06.06-2.83-2.83.06-.06A1.65 1.65 0 0 0 3.09 14H3v-4h.09A1.65 1.65 0 0 0 4.27 7.18l-.06-.06 2.83-2.83.06.06A1.65 1.65 0 0 0 10 3.17V3h4v.17a1.65 1.65 0 0 0 2.9 1.18l.06-.06 2.83 2.83-.06.06A1.65 1.65 0 0 0 20.91 10H21v4h-.09A1.65 1.65 0 0 0 19.4 15z"/></svg>
+      <span>Settings</span>
+    </button>
+  </nav>
 
   <!-- Command palette (Cmd/Ctrl + K) -->
   <div class="cmdk-overlay" id="cmdkOverlay" onclick="if(event.target===this)closeCmdk()">
@@ -202,7 +577,7 @@
   </div>
 
   <!-- Settings / import-export modal -->
-  <div class="modal-overlay" id="loginOverlay" onclick="if(event.target===this)closeLogin()">
+  <div class="modal-overlay" id="loginOverlay" aria-hidden="true" onclick="if(event.target===this)closeLogin()">
     <div class="modal login-modal" role="dialog" aria-modal="true" aria-label="Sign in">
       <div class="modal-head">
         <h2 class="modal-title">Sign in to saveto.me</h2>
@@ -219,92 +594,124 @@
     </div>
   </div>
 
-  <div class="modal-overlay" id="settingsOverlay" onclick="if(event.target===this)closeSettings()">
-    <div class="modal settings-modal" role="dialog" aria-modal="true" aria-label="Settings">
-      <div class="modal-head">
-        <h2 class="modal-title">Settings</h2>
-        <button class="modal-close" onclick="closeSettings()" title="Close" aria-label="Close">×</button>
+  <div class="modal-overlay onboarding-overlay" id="onboardingOverlay" aria-hidden="true" onclick="if(event.target===this)closeOnboarding()">
+    <div class="modal onboarding-modal" role="dialog" aria-modal="true" aria-labelledby="onboardingTitle" aria-describedby="onboardingDescription">
+      <button class="onboarding-close" type="button" onclick="closeOnboarding()" aria-label="Decide later">×</button>
+      <div class="onboarding-art" aria-hidden="true">
+        <div class="onboarding-browser-stack"><span class="ob-chrome"></span><span class="ob-safari"></span><span class="ob-firefox"></span><span class="ob-edge"></span></div>
+        <div class="onboarding-arrow">→</div>
+        <div class="onboarding-smart-mark">✦</div>
       </div>
-      <p class="settings-sub">Manage your bookmarks and quick-capture tools.</p>
-
-      <div class="settings-card">
-        <div class="settings-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
-        <div class="settings-card-body">
-          <div class="settings-card-title">Privacy mode</div>
-          <p class="settings-card-desc">saveto.me runs on your device. With Privacy mode <b>on</b>, it makes <b>no external requests</b> for link icons or page previews: favicons become local letter badges and the Pinterest view shows a local placeholder instead of a website screenshot. Your saved URLs are never sent to Google or WordPress.</p>
-          <div class="settings-card-actions">
-            <button class="switch" id="privacyToggle" role="switch" aria-checked="false" onclick="setPrivacyMode()">
-              <span class="switch-track"><span class="switch-thumb"></span></span>
-              <span class="switch-label">Off</span>
-            </button>
-          </div>
-        </div>
+      <div class="onboarding-kicker">WELCOME TO SAVETO.ME</div>
+      <h2 id="onboardingTitle">Want to make all your old bookmarks smarter?</h2>
+      <p id="onboardingDescription">Import your browser bookmarks in one step. We will preserve your folders, skip duplicates, create useful tags, and make everything easier to find.</p>
+      <div class="onboarding-outcomes">
+        <span><b>✓</b> Keep existing folders</span>
+        <span><b>✓</b> Skip duplicate links</span>
+        <span><b>✓</b> Add smart organization</span>
       </div>
-
-      <div class="settings-card">
-        <div class="settings-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m8 11 4 4 4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg></div>
-        <div class="settings-card-body">
-          <div class="settings-card-title">Import bookmarks</div>
-          <p class="settings-card-desc">Import a bookmarks file exported from Chrome, Firefox, Safari, or Edge (an <b>.html</b> file), or a saveto.me <b>.json</b> backup. Browser folders become folders; duplicates are skipped.</p>
-          <div class="settings-card-actions">
-            <label class="modal-btn primary" for="importFile">Choose file to import…</label>
-            <input id="importFile" type="file" accept=".html,.htm,.json,text/html,application/json" style="display:none" onchange="handleImportFile(event)" />
-          </div>
-          <div class="modal-status" id="importStatus"></div>
-        </div>
+      <div class="onboarding-actions">
+        <button class="modal-btn onboarding-later" type="button" onclick="closeOnboarding()">Maybe later</button>
+        <button class="modal-btn primary onboarding-import" type="button" onclick="acceptOnboardingImport()">Import my bookmarks <span aria-hidden="true">→</span></button>
       </div>
+      <small class="onboarding-note">Works with Chrome, Safari, Firefox, Edge, and any standard bookmarks HTML file.</small>
+    </div>
+  </div>
 
-      <div class="settings-card">
-        <div class="settings-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V9"/><path d="m8 13 4-4 4 4"/><path d="M4 7V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2"/></svg></div>
-        <div class="settings-card-body">
-          <div class="settings-card-title">Export bookmarks</div>
-          <p class="settings-card-desc">Download all your links. Use <b>HTML</b> to import into any browser, or <b>JSON</b> for a full saveto.me backup.</p>
-          <div class="settings-card-actions">
-            <button class="modal-btn" onclick="exportHTML()">Export as HTML</button>
-            <button class="modal-btn" onclick="exportJSON()">Export as JSON</button>
-          </div>
-        </div>
-      </div>
+  <div class="modal-overlay" id="saveLinkOverlay" aria-hidden="true" onclick="if(event.target===this)closeSaveLink()">
+    <div class="modal save-link-modal" role="dialog" aria-modal="true" aria-labelledby="saveLinkTitleHeading">
+      <div class="modal-head"><h2 class="modal-title" id="saveLinkTitleHeading">Save a link</h2><button class="modal-close" type="button" onclick="closeSaveLink()" aria-label="Close">×</button></div>
+      <p class="modal-hint">Paste any website address. saveto.me will add smart tags, choose a folder, and index it for search.</p>
+      <form class="save-link-form" onsubmit="submitSaveLink(event)">
+        <label for="saveLinkUrl">Website address</label>
+        <input id="saveLinkUrl" type="text" inputmode="url" autocomplete="url" autocapitalize="none" spellcheck="false" placeholder="https://example.com/article" required>
+        <label for="saveLinkTitle">Title <span>optional</span></label>
+        <input id="saveLinkTitle" type="text" autocomplete="off" placeholder="Fetched automatically">
+        <label for="saveLinkProject">Folder</label>
+        <select id="saveLinkProject"><option value="">Automatic smart folder</option></select>
+        <div class="modal-status" id="saveLinkStatus" role="status"></div>
+        <div class="save-link-actions"><button class="modal-btn" type="button" onclick="closeSaveLink()">Cancel</button><button class="modal-btn primary" type="submit">Save and organize</button></div>
+      </form>
+    </div>
+  </div>
 
-      <div class="settings-card">
-        <div class="settings-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg></div>
-        <div class="settings-card-body">
-          <div class="settings-card-title">Re-classify links</div>
-          <p class="settings-card-desc">Re-run the on-device tagger over every saved link with the latest rules. Refreshes tags and descriptions, and re-files links stuck in an auto-created folder that no longer fits. Your notes, pinned items, and manually-created folders are left untouched.</p>
-          <div class="settings-card-actions">
-            <button class="modal-btn" onclick="confirmReclassify()">Re-classify all links</button>
-          </div>
-        </div>
+  <div class="modal-overlay" id="settingsOverlay" aria-hidden="true" onclick="if(event.target===this)closeSettings()">
+    <div class="modal settings-modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+      <div class="modal-head"><div><h2 class="modal-title" id="settingsTitle">All settings</h2><p class="settings-sub">Choose a category.</p></div><button class="modal-close" type="button" onclick="closeSettings()" title="Close" aria-label="Close">×</button></div>
+      <div class="settings-browser">
+      <div class="settings-tabs" role="tablist" aria-label="Settings categories">
+        <button class="settings-tab active" id="settings-tab-intelligence" type="button" role="tab" aria-selected="true" aria-controls="settings-panel-intelligence" tabindex="0" data-settings-tab="intelligence" onclick="setSettingsCategory('intelligence')" onkeydown="onSettingsTabKey(event)"><span class="settings-tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 4.5A3 3 0 0 0 4 6v1.2a3.2 3.2 0 0 0 0 5.6V14a3 3 0 0 0 5.5 1.7V4.5Z"/><path d="M14.5 4.5A3 3 0 0 1 20 6v1.2a3.2 3.2 0 0 1 0 5.6V14a3 3 0 0 1-5.5 1.7V4.5Z"/><path d="M9.5 8H7.8M14.5 8h1.7M9.5 12H7.8m6.7 0h1.7M9.5 16H8m6.5 0H16"/></svg></span><span class="settings-tab-copy"><strong>Intelligence</strong><small>Search, tags and Ask</small></span></button>
+        <button class="settings-tab" id="settings-tab-data" type="button" role="tab" aria-selected="false" aria-controls="settings-panel-data" tabindex="-1" data-settings-tab="data" onclick="setSettingsCategory('data')" onkeydown="onSettingsTabKey(event)"><span class="settings-tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M5 14v5h14v-5"/></svg></span><span class="settings-tab-copy"><strong>Import &amp; export</strong><small>Bookmarks and backups</small></span></button>
+        <button class="settings-tab" id="settings-tab-capture" type="button" role="tab" aria-selected="false" aria-controls="settings-panel-capture" tabindex="-1" data-settings-tab="capture" onclick="setSettingsCategory('capture')" onkeydown="onSettingsTabKey(event)"><span class="settings-tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 3.5h3v3h2v-3h3v3h3v3h-3v2h3v3h-3v3h-3v-3h-2v3h-3v-3h-3v-3h3v-2h-3v-3h3z"/></svg></span><span class="settings-tab-copy"><strong>Save tools</strong><small>Extensions and capture</small></span></button>
+        <button class="settings-tab" id="settings-tab-health" type="button" role="tab" aria-selected="false" aria-controls="settings-panel-health" tabindex="-1" data-settings-tab="health" onclick="setSettingsCategory('health')" onkeydown="onSettingsTabKey(event)"><span class="settings-tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="6.5" ry="2.5"/><path d="M5.5 5v5c0 1.4 2.9 2.5 6.5 2.5s6.5-1.1 6.5-2.5V5"/><path d="M5.5 10v5c0 1.4 2.9 2.5 6.5 2.5s6.5-1.1 6.5-2.5v-5"/><path d="M5.5 15v4c0 1.4 2.9 2.5 6.5 2.5s6.5-1.1 6.5-2.5v-4"/></svg></span><span class="settings-tab-copy"><strong>Library health</strong><small>Broken and duplicate links</small></span></button>
+        <button class="settings-tab" id="settings-tab-privacy" type="button" role="tab" aria-selected="false" aria-controls="settings-panel-privacy" tabindex="-1" data-settings-tab="privacy" onclick="setSettingsCategory('privacy')" onkeydown="onSettingsTabKey(event)"><span class="settings-tab-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 5 6v5c0 4.7 2.9 8 7 10 4.1-2 7-5.3 7-10V6l-7-3Z"/></svg></span><span class="settings-tab-copy"><strong>Privacy</strong><small>Network and account</small></span></button>
       </div>
 
-      <div class="settings-card">
-        <div class="settings-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12a1 1 0 0 1 1 1v16l-7-4-7 4V4a1 1 0 0 1 1-1z"/></svg></div>
-        <div class="settings-card-body">
-          <div class="settings-card-title">Quick-capture bookmarklet</div>
-          <p class="settings-card-desc">Drag this button to your browser's bookmarks bar. Click it on any page to save that page to saveto.me in one tap — no extension needed.</p>
-          <div class="settings-card-actions">
-            <a class="modal-btn primary bookmarklet-btn" id="bookmarkletLink" draggable="true">＋ Save to saveto.me</a>
-          </div>
-          <p class="settings-card-desc" style="margin:8px 0 0;font-size:12px;opacity:.8">Can't drag? Right-click your bookmarks bar → Add page, and paste the link's address.</p>
-        </div>
+      <div class="settings-content">
+      <button class="settings-mobile-back" type="button" onclick="showSettingsDirectory()">All settings</button>
+
+      <section class="settings-panel active" id="settings-panel-intelligence" data-settings-panel="intelligence" role="tabpanel" aria-labelledby="settings-tab-intelligence">
+        <div class="settings-panel-head"><span class="settings-panel-icon" aria-hidden="true">✦</span><div><h3>Library intelligence</h3><p>Control smart tags, full-text indexing, semantic search, and Ask.</p></div></div>
+        <div class="settings-card"><div class="settings-card-icon" aria-hidden="true">✦</div><div class="settings-card-body"><div class="settings-card-title">Build the smart index</div><p class="settings-card-desc">Fetch readable page content, improve categories and tags, detect same-content copies, and prepare links for semantic search and Ask My Library.</p><div class="settings-card-actions"><button class="modal-btn primary" id="enrichLibraryBtn" type="button" onclick="enrichLibraryAll()">Enrich library</button><span class="library-intel-status" id="libraryIntelStatus">Sign in to enable cloud intelligence</span></div></div></div>
+        <div class="settings-card"><div class="settings-card-icon" aria-hidden="true">↻</div><div class="settings-card-body"><div class="settings-card-title">Re-classify all links</div><p class="settings-card-desc">Rebuild on-device descriptions and smart tags, persist every change, sync it, and continue indexing. Notes, pins, and manually-created folders stay untouched.</p><div class="settings-card-actions"><button class="modal-btn" type="button" onclick="confirmReclassify()">Re-classify all links</button></div></div></div>
+      </section>
+
+      <section class="settings-panel" id="settings-panel-data" data-settings-panel="data" role="tabpanel" aria-labelledby="settings-tab-data" hidden>
+        <div class="settings-panel-head"><span class="settings-panel-icon" aria-hidden="true">↓</span><div><h3>Import &amp; export</h3><p>Bring browser favorites into the smart library or download a backup.</p></div></div>
+        <div class="settings-card settings-import-card"><div class="settings-card-icon" aria-hidden="true">↓</div><div class="settings-card-body"><div class="settings-card-title">Import bookmarks</div><p class="settings-card-desc">Import from Chrome, Firefox, Safari, Edge, Brave, Opera, or a saveto.me JSON backup. Browser imports keep every original folder nested under a clear browser root.</p><ol class="settings-import-flow" aria-label="Import workflow"><li class="current" aria-current="step">Upload</li><li>Analyze</li><li>Preview</li><li>Import</li></ol><div class="settings-field-row"><label class="import-strategy-label" for="importBrowserSource">Imported from</label><select class="import-strategy-select" id="importBrowserSource"><option value="auto">Detect automatically</option><option value="Chrome">Chrome</option><option value="Safari">Safari</option><option value="Firefox">Firefox</option><option value="Edge">Microsoft Edge</option><option value="Brave">Brave</option><option value="Opera">Opera</option><option value="Vivaldi">Vivaldi</option><option value="Browser">Other browser</option></select></div><div class="settings-field-row"><label class="import-strategy-label" for="importFolderStrategy">Folder organization</label><select class="import-strategy-select" id="importFolderStrategy"><option value="preserve">Keep browser folders — recommended</option><option value="smart">Smart categories inside browser favorites</option><option value="inbox">One Inbox inside browser favorites</option></select></div><div class="settings-card-actions settings-import-action"><input id="importFile" class="visually-hidden" type="file" accept=".html,.htm,.json,text/html,application/json" onchange="handleImportFile(event)"><button class="modal-btn primary" type="button" onclick="document.getElementById('importFile').click()">Choose file to import…</button></div><div class="modal-status" id="importStatus" role="status"></div></div></div>
+        <div class="settings-card settings-export-card"><div class="settings-card-icon" aria-hidden="true">↓</div><div class="settings-card-body"><div class="settings-card-title">Export and backup</div><p class="settings-card-desc">Download a complete backup with links, folders, tags, notes, pins, and organization settings.</p><div class="settings-card-actions"><button class="modal-btn" type="button" onclick="exportJSON()">Export library…</button><button class="modal-btn" type="button" onclick="exportHTML()">Browser HTML</button></div></div></div>
+      </section>
+
+      <section class="settings-panel" id="settings-panel-capture" data-settings-panel="capture" role="tabpanel" aria-labelledby="settings-tab-capture" hidden>
+        <div class="settings-panel-head"><span class="settings-panel-icon" aria-hidden="true">＋</span><div><h3>Save tools</h3><p>Save pages without copying and pasting between apps.</p></div></div>
+        <div class="settings-card"><div class="settings-card-icon" aria-hidden="true">▣</div><div class="settings-card-body"><div class="settings-card-title">Browser extensions</div><p class="settings-card-desc">Save the current page, a right-clicked link, or use the keyboard shortcut.</p><div class="settings-card-actions extension-downloads"><a class="modal-btn primary" href="/extensions/saveto-me-chrome-edge-brave-opera.zip" download>Chrome · Edge · Brave · Opera</a><a class="modal-btn" href="https://addons.mozilla.org/addon/saveto-me-smart-bookmarks/" target="_blank" rel="noopener noreferrer">Firefox — Mozilla Add-ons ↗</a><a class="modal-btn" href="/extensions/saveto-me-safari-web-extension-source.zip" download>Safari source</a></div></div></div>
+        <div class="settings-card"><div class="settings-card-icon" aria-hidden="true">☆</div><div class="settings-card-body"><div class="settings-card-title">Quick-capture bookmarklet</div><p class="settings-card-desc">Drag this button to the bookmarks bar for a no-extension save button.</p><div class="settings-card-actions"><a class="modal-btn primary bookmarklet-btn" id="bookmarkletLink" draggable="true">＋ Save to saveto.me</a></div></div></div>
+      </section>
+
+      <section class="settings-panel" id="settings-panel-health" data-settings-panel="health" role="tabpanel" aria-labelledby="settings-tab-health" hidden>
+        <div class="settings-panel-head"><span class="settings-panel-icon" aria-hidden="true">✓</span><div><h3>Library health</h3><p>Find duplicates, invalid URLs, unreachable pages, same-content copies, and confirmed broken links.</p></div></div>
+        <div class="settings-card"><div class="settings-card-icon" aria-hidden="true">✓</div><div class="settings-card-body"><div class="settings-card-title">Health Checker</div><p class="settings-card-desc">Scan the complete library, review every result, and safely remove confirmed broken links. A link is only marked broken after a confirmed HTTP 404 or 410 response.</p><div class="settings-card-actions"><button class="modal-btn primary" type="button" onclick="closeSettings(); openHealth();">Open Health Checker</button></div></div></div>
+      </section>
+
+      <section class="settings-panel" id="settings-panel-privacy" data-settings-panel="privacy" role="tabpanel" aria-labelledby="settings-tab-privacy" hidden>
+        <div class="settings-panel-head"><span class="settings-panel-icon" aria-hidden="true">◇</span><div><h3>Privacy</h3><p>Choose whether page icons, previews, and smart content processing may use network requests.</p></div></div>
+        <div class="settings-card"><div class="settings-card-icon" aria-hidden="true">◇</div><div class="settings-card-body"><div class="settings-card-title">Privacy mode</div><p class="settings-card-desc">When enabled, no external favicon or preview requests are made. Smart enrichment is paused until Privacy mode is turned off.</p><div class="settings-card-actions"><button class="switch" id="privacyToggle" type="button" role="switch" aria-label="Privacy mode" aria-checked="false" onclick="setPrivacyMode()"><span class="switch-track"><span class="switch-thumb"></span></span><span class="switch-label">Off</span></button></div></div></div>
+        <div class="settings-card danger-zone"><div class="settings-card-icon" aria-hidden="true">!</div><div class="settings-card-body"><div class="settings-card-title">Delete account permanently</div><p class="settings-card-desc">Permanently removes your account, cloud library, folders, settings, search index, Ask history, AI usage data, and this browser’s local copy. This cannot be undone.</p><div class="settings-card-actions"><button class="modal-btn account-delete-btn" id="deleteAccountBtn" type="button" onclick="deleteAccountPermanently()">Delete account permanently</button><span class="library-intel-status" id="deleteAccountStatus" role="status">Sign in to delete an account</span></div></div></div>
+      </section>
+      </div>
       </div>
     </div>
   </div>
 
+  <div class="modal-overlay" id="logoutOverlay" aria-hidden="true" onclick="if(event.target===this)closeLogoutOptions()">
+    <div class="modal logout-modal" role="dialog" aria-modal="true" aria-labelledby="logoutTitle">
+      <div class="modal-head">
+        <div><h2 class="modal-title" id="logoutTitle">Sign out completely</h2><p class="settings-sub">Your cloud library stays safe. The private copy on this device will be removed.</p></div>
+        <button class="modal-close" type="button" onclick="closeLogoutOptions()" title="Close" aria-label="Close">×</button>
+      </div>
+      <div class="logout-options">
+        <button class="logout-option" type="button" onclick="cloudLogout()">
+          <span class="logout-option-icon">↗</span><span><strong>Sign out completely</strong><small>Sync changes, sign out, and remove links, folders, and pending changes from this device. Your cloud library remains in your account.</small></span>
+        </button>
+      </div>
+      <div class="modal-status" id="logoutStatus" role="status"></div>
+    </div>
+  </div>
+
   <!-- All tags modal (searchable) -->
-  <div class="modal-overlay" id="tagsOverlay" onclick="if(event.target===this)closeTagsModal()">
+  <div class="modal-overlay" id="tagsOverlay" aria-hidden="true" onclick="if(event.target===this)closeTagsModal()">
     <div class="modal" role="dialog" aria-modal="true" aria-label="All tags">
       <div class="modal-head">
         <h2 class="modal-title">All tags</h2>
         <button class="modal-close" onclick="closeTagsModal()" title="Close" aria-label="Close">×</button>
       </div>
-      <input id="tagsSearch" class="tags-search" type="text" placeholder="Search tags…" oninput="onTagsSearch(this.value)" />
+      <input id="tagsSearch" class="tags-search" type="text" aria-label="Search tags" placeholder="Search tags…" oninput="onTagsSearch(this.value)" />
       <div id="tagsModalList" class="tags-modal-list"></div>
     </div>
   </div>
 
   <!-- Customize folder (icon + color) -->
-  <div class="modal-overlay" id="folderCustomOverlay" onclick="if(event.target===this)closeFolderCustomize()">
+  <div class="modal-overlay" id="folderCustomOverlay" aria-hidden="true" onclick="if(event.target===this)closeFolderCustomize()">
     <div class="modal" role="dialog" aria-modal="true" aria-label="Customize folder" style="max-width:420px">
       <div class="modal-head">
         <h2 class="modal-title">Customize folder</h2>
@@ -325,7 +732,7 @@
   <!-- Quick-look preview removed -->
 
   <!-- Keyboard shortcuts cheat sheet -->
-  <div class="modal-overlay" id="shortcutsOverlay" onclick="if(event.target===this)closeShortcuts()">
+  <div class="modal-overlay" id="shortcutsOverlay" aria-hidden="true" onclick="if(event.target===this)closeShortcuts()">
     <div class="modal" role="dialog" aria-modal="true" aria-label="Keyboard shortcuts" style="max-width:420px">
       <div class="modal-head">
         <h2 class="modal-title">Keyboard shortcuts</h2>
@@ -342,21 +749,24 @@
   </div>
 
   <!-- Link health modal (duplicates / broken / invalid) -->
-  <div class="modal-overlay" id="healthOverlay" onclick="if(event.target===this)closeHealth()">
+  <div class="modal-overlay" id="healthOverlay" aria-hidden="true" onclick="if(event.target===this)closeHealth()">
     <div class="modal" role="dialog" aria-modal="true" aria-label="Check links">
       <div class="modal-head">
         <h2 class="modal-title">Check links</h2>
         <button class="modal-close" onclick="closeHealth()" title="Close" aria-label="Close">×</button>
       </div>
-      <p class="modal-hint">Finds <b>duplicate</b> and <b>invalid</b> URLs instantly. A <b>reachability</b> check is best-effort: browsers block reading cross-site responses (CORS), so only clear failures (bad domain, timeout) are flagged — a link marked "unreachable" may still open fine.</p>
+      <p class="modal-hint">Finds <b>duplicate</b> and <b>invalid</b> URLs instantly. When signed in, the live-page check runs securely on the server. Only pages confirmed as <b>404 Not Found</b> or <b>410 Gone</b> are marked broken; timeouts and blocked checks are never selected for removal.</p>
       <div class="health-actions">
         <button class="modal-btn" id="healthScanBtn" onclick="runHealthCheck()">Scan all links</button>
-        <label class="health-reach"><input type="checkbox" id="healthReach" /> also test reachability (slower)</label>
+        <label class="health-reach"><input type="checkbox" id="healthReach" checked /> also check live pages (slower)</label>
       </div>
-      <div class="modal-status" id="healthStatus"></div>
+      <div class="health-background-note" id="healthBackgroundNote" hidden>Runs securely on the server — you may close this page and return later.</div>
+      <progress class="health-progress" id="healthProgress" max="1" value="0" hidden aria-label="Link scan progress"></progress>
+      <div class="modal-status" id="healthStatus" role="status" aria-live="polite"></div>
       <div id="healthList" class="health-list"></div>
       <div class="health-foot" id="healthFoot" style="display:none">
         <label class="health-reach"><input type="checkbox" id="healthSelAll" onchange="toggleHealthSelectAll(this.checked)" /> select all</label>
+        <button class="health-remove-broken-btn" id="healthRemoveBrokenBtn" onclick="removeAllBrokenHealth()" hidden>Remove all broken</button>
         <button class="health-remove-btn" id="healthRemoveBtn" onclick="removeHealthSelected()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
           Remove selected
@@ -370,7 +780,7 @@
   </div>
 
   <!-- Organize modal (bulk auto-file into folders) -->
-  <div class="modal-overlay" id="organizeOverlay" onclick="if(event.target===this)closeOrganize()">
+  <div class="modal-overlay" id="organizeOverlay" aria-hidden="true" onclick="if(event.target===this)closeOrganize()">
     <div class="modal" role="dialog" aria-modal="true" aria-label="Organize links">
       <div class="modal-head">
         <h2 class="modal-title">Auto-organize</h2>
@@ -386,8 +796,28 @@
     </div>
   </div>
 
-  <div class="modal-overlay" id="askOverlay" onclick="if(event.target===this)askCancel()">
-    <div class="modal ask-modal" role="dialog" aria-modal="true">
+  <!-- Ask My Library — grounded answers with saved-link citations -->
+  <div class="modal-overlay" id="libraryAskOverlay" aria-hidden="true" onclick="if(event.target===this)closeLibraryAsk()">
+    <div class="modal library-ask-modal" role="dialog" aria-modal="true" aria-label="Ask My Library">
+      <div class="modal-head">
+        <div>
+          <div class="library-ask-kicker">PERSONAL INTERNET LIBRARY</div>
+          <h2 class="modal-title">Ask My Library</h2>
+        </div>
+        <button class="modal-close" onclick="closeLibraryAsk()" title="Close" aria-label="Close">×</button>
+      </div>
+      <p class="modal-hint">Ask a question in any language. Answers are grounded only in your saved pages and include links to the sources used.</p>
+      <textarea id="libraryAskInput" class="library-ask-input" rows="3" aria-label="Question for your library" placeholder="What did I save about semantic search?" onkeydown="if((event.metaKey||event.ctrlKey)&&event.key==='Enter')submitLibraryAsk()"></textarea>
+      <div class="library-ask-actions">
+        <span id="libraryAskStatus" class="library-ask-status">⌘/Ctrl + Enter to ask</span>
+        <button class="modal-btn primary" id="libraryAskBtn" onclick="submitLibraryAsk()">Ask my library</button>
+      </div>
+      <div id="libraryAskResult" class="library-ask-result" aria-live="polite"></div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="askOverlay" aria-hidden="true" onclick="if(event.target===this)askCancel()">
+    <div class="modal ask-modal" role="dialog" aria-modal="true" aria-labelledby="askTitle" aria-describedby="askMsg">
       <div class="ask-icon" id="askIcon"></div>
       <h2 class="ask-title" id="askTitle">Title</h2>
       <p class="ask-msg" id="askMsg"></p>
@@ -399,6 +829,11 @@
     </div>
   </div>
 
-  <script type="module" src="/src/app.js"></script>
+  </div>
+
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://saveto.me/#website","url":"https://saveto.me/","name":"saveto.me","description":"AI-powered smart bookmarks and a private Personal Internet Library.","publisher":{"@id":"https://saveto.me/#organization"}},{"@type":"Organization","@id":"https://saveto.me/#organization","name":"saveto.me","url":"https://saveto.me/","logo":{"@type":"ImageObject","url":"https://saveto.me/logo-mark.png","width":512,"height":512}},{"@type":"SoftwareApplication","@id":"https://saveto.me/#app","name":"saveto.me","url":"https://saveto.me/","applicationCategory":"ProductivityApplication","operatingSystem":"Web","description":"A private Personal Internet Library that imports browser bookmarks, automatically organizes and tags saved pages, detects duplicates, supports full-text and semantic search, and answers questions from saved sources.","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"featureList":["Browser bookmark import","Automatic organization","Smart tags","Full-text search","Semantic search","Duplicate detection","Private sync","Ask My Library"]}]}
+  </script>
+  <script type="module" src="/src/boot.js"></script>
 </body>
 </html>
